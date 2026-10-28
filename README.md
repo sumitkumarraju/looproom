@@ -1,0 +1,55 @@
+# Looproom
+
+A colorful retro desktop music player. React, Vite, Tailwind, and Phosphor Icons; MIT-licensed application source. No server, analytics, paid UI components, or API secrets required. Optional Spotify playback uses Spotify's proprietary SDK and service.
+
+## Run
+
+```sh
+npm ci
+npm run dev
+```
+
+Open http://127.0.0.1:5173/. `npm run build` emits a standalone static site in `dist/`; `npm test` checks timestamp parsing and queue ranking. Deploy `dist/` on any static HTTPS host. Sites hosting metadata can be removed if self-hosting.
+
+## Spotify setup
+
+1. Sign in at https://developer.spotify.com/dashboard with your Premium account. Create an app and enable Web API and Web Playback SDK.
+2. Add this exact Redirect URI in its settings:
+   `https://looproom-radio-skr.tasty-chick-4700.chatgpt.site/`
+   For local development also add `http://127.0.0.1:5173/`. Spotify accepts HTTP loopback IP addresses; use 127.0.0.1 rather than localhost. If deploying elsewhere, register that HTTPS origin with its trailing slash instead.
+3. Add your Spotify account to the app's user allowlist if required. Current new development apps allow up to five users and require the owner to maintain Premium.
+4. Open Looproom → Connect Spotify. Paste the public Client ID, never a client secret, and complete Spotify authorization.
+5. Select a mood or search for a song, then click a result. Audio comes from Spotify through its official playback SDK. Some browsers require another tap on Play. Allow encrypted media if the browser requests it.
+
+Authorization uses PKCE S256 with a cryptographically random verifier and checked state. The temporary OAuth handshake lives in sessionStorage and is removed after the callback. Access/refresh tokens live only in memory, with refresh before expiry; reload requires reconnecting. Client ID and local likes/skips are stored in localStorage. No secret is embedded or sent to a third-party application server.
+
+The application does not create a developer app or authorize your account for you. Live Spotify playback must be tested after your Client ID and user authorization are available. Unsupported accounts, API denials, cancellation, rate limits, SDK failures, and autoplay blocking show actionable messages. Private hosted authentication may require returning to the same browser/tab for OAuth.
+
+## Listening
+
+- Demo mode contains six original, procedurally composed instrumentals. Tracks advance indefinitely; repeat-one repeats the current track.
+- Autopilot ranks next tracks by mood (+4), local favorite (+3), prior completions (+0.3), skips (−1.2), and recent history (−5). Genre filters constrain the candidates. Surprise Me selects a random candidate.
+- Spotify mode searches for mood-related music, then sends a ranked URI queue to Spotify with context-repeat. There is no dependency on restricted recommendations or audio-features endpoints. Favorites are local, not Spotify library saves. Queue changes take effect when a new queue starts; manual Next uses current ranking while Autopilot is on. Natural advancement uses the queue already sent to Spotify. Autopilot off starts candidates in search order.
+- This is a transparent small-scale heuristic inspired by published research; it does not reproduce Spotify's proprietary algorithm, analyze Spotify audio, or train models on its content.
+- Add your own MP3/WAV/M4A/compatible audio files. Local files remain in browser memory for the current session and are not uploaded. Re-add them after reload.
+- Import a matching `.lrc` file using the plus button in the lyric window. Timestamps, multiple timestamps per line, and millisecond offsets are supported. Tap a line to seek. No copyrighted lyrics are bundled or scraped.
+- In About, use Change album art for the current local track. Colors are sampled from the cover, with a safe fallback if CORS prevents image access. The cover itself remains unmodified.
+- Space toggles playback; left/right arrows move between tracks when focus is outside controls. Native sliders support keyboard seeking/volume. Reduced-motion preferences disable lyric movement and visualizer motion.
+
+Spotify explicitly prohibits synchronized lyrics in its platform guidance. Its player therefore uses a listening view. The animated demo text is an original visual poem, clearly labeled, not a sung lyric transcript. Full animated synced lyrics are available for local audio with user-provided LRC.
+
+## Sources and constraints checked October 28, 2026
+
+- Spotify recommendation exploration research: https://research.atspotify.com/publications/explore-exploit-explain-personalizing-explainable-recommendations-with-bandits
+- Spotify contextual calibration research: https://research.atspotify.com/publications/calibrated-recommendations-with-contextual-bandits
+- PKCE: https://developer.spotify.com/documentation/web-api/tutorials/code-pkce-flow
+- Playback SDK: https://developer.spotify.com/documentation/web-playback-sdk
+- Development access: https://developer.spotify.com/documentation/web-api/concepts/quota-modes
+- Spotify compliance and synchronized-lyrics restriction: https://developer.spotify.com/compliance-tips
+- Browser autoplay: https://developer.mozilla.org/en-US/docs/Web/Media/Guides/Autoplay
+
+## Assets and licenses
+
+Application code: MIT (LICENSE). Original audio, pixel SVG covers, and visual poem: CC0 1.0 dedication, https://creativecommons.org/publicdomain/zero/1.0/. Regenerate audio and covers using `python3 scripts/generate-assets.py` (Python standard library only).
+
+React, Vite, Tailwind CSS, and Phosphor Icons use MIT licenses; installed dependency licenses remain in their packages. System font stacks are used without redistributing fonts. Spotify artwork, metadata, SDK, and audio remain governed by Spotify and their respective rightsholders; they are not covered by this project's MIT or CC0 licenses. Source available locally; no public GitHub repository has been created.

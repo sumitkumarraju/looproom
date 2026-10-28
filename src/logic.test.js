@@ -1,0 +1,3 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {parseLrc,rankTracks} from './logic.js';
+test('LRC parses repeated timestamps, fractions and offset',()=>assert.deepEqual(parseLrc('[offset:-500]\n[00:01.50][00:03.005]Hi\n[00:00.1]Start'),[{time:0,text:'Start'},{time:1,text:'Hi'},{time:2.505,text:'Hi'}]));
+test('queue excludes current, respects genre, rewards likes and discourages skips',()=>{const ts=[{id:'a',genre:'Lo-fi',moods:['Focus']},{id:'b',genre:'Lo-fi',moods:['Focus']},{id:'c',genre:'Lo-fi',moods:['Focus']},{id:'d',genre:'Ambient',moods:['Focus']}];const q=rankTracks(ts,'a','Focus','Lo-fi',{b:{skips:4},c:{liked:true}});assert.deepEqual(q.map(t=>t.id),['c','b']);});
