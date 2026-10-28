@@ -53,3 +53,9 @@ Spotify explicitly prohibits synchronized lyrics in its platform guidance. Its p
 Application code: MIT (LICENSE). Original audio, pixel SVG covers, and visual poem: CC0 1.0 dedication, https://creativecommons.org/publicdomain/zero/1.0/. Regenerate audio and covers using `python3 scripts/generate-assets.py` (Python standard library only).
 
 React, Vite, Tailwind CSS, and Phosphor Icons use MIT licenses; installed dependency licenses remain in their packages. System font stacks are used without redistributing fonts. Spotify artwork, metadata, SDK, and audio remain governed by Spotify and their respective rightsholders; they are not covered by this project's MIT or CC0 licenses. Source available locally; no public GitHub repository has been created.
+
+## Sound-reactive album atmosphere
+
+The background now combines album-colored soft light with a retro pixel spectrum. Demo and imported audio feed a Web Audio `AnalyserNode`; low-frequency energy shapes the light and frequency bands drive the spectrum. The graph is initialized/resumed only after a pointer or keyboard interaction, never requests microphone access, and is reused across tracks. If analysis is unavailable, the background falls back to gentle ambient movement. Spotify uses ambient movement only; its protected audio is not analyzed.
+
+The Motion button hides the atmosphere. Playback pause, hidden tabs, and reduced-motion preferences stop the animation loop. Rendering is capped at about 30 fps, uses direct transform/opacity updates in an isolated memoized component, and does not trigger React renders per animation frame.
