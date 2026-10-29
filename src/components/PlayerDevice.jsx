@@ -16,7 +16,8 @@ export default function PlayerDevice({current,prefs,playing,time,duration,volume
   if(!matchMedia('(pointer: fine)').matches||matchMedia('(prefers-reduced-motion: reduce)').matches)return;
   let x=0,y=0,tx=0,ty=0,frame=0;
   const move=e=>{tx=e.clientX/innerWidth-.5;ty=e.clientY/innerHeight-.5};
-  const tick=()=>{x+=(tx-x)*.06;y+=(ty-y)*.06;el.style.setProperty('--ry',`${x*22}deg`);el.style.setProperty('--rx',`${-y*14}deg`);frame=requestAnimationFrame(tick)};
+  // Eases back to flat while the player is being dragged, and skips style writes once settled.
+  const tick=()=>{frame=requestAnimationFrame(tick);const moving=grab.current?.classList.contains('is-moving'),gx=moving?0:tx,gy=moving?0:ty;if(Math.abs(gx-x)+Math.abs(gy-y)<.0005)return;x+=(gx-x)*.06;y+=(gy-y)*.06;el.style.setProperty('--ry',`${(x*22).toFixed(2)}deg`);el.style.setProperty('--rx',`${(-y*14).toFixed(2)}deg`)};
   addEventListener('pointermove',move);frame=requestAnimationFrame(tick);
   return()=>{cancelAnimationFrame(frame);removeEventListener('pointermove',move)};
  },[]);
