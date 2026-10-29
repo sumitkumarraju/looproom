@@ -1,5 +1,6 @@
 import {useState} from 'react';
-import {Disc,Quotes,SquaresFour,Sparkle,Play,Pause,SkipForward,ArrowUpRight,CornersOut,CornersIn} from '@phosphor-icons/react';
+import {Disc,Quotes,SquaresFour,Sparkle,Play,Pause,SkipForward,ArrowUpRight,CornersOut,CornersIn,Export,X,DownloadSimple} from '@phosphor-icons/react';
+import {useInstall,isStandalone,isIOS} from '../install';
 import {IconButton} from './ui';
 import {catalog} from '../catalog';
 import * as spotify from '../spotify';
@@ -7,6 +8,21 @@ import PlayerDevice from './PlayerDevice';
 import LyricWindow from './LyricWindow';
 import Collection from './Collection';
 import MoodList from './MoodList';
+
+// Invites phone browsers to install Looproom as a full-screen home-screen app.
+function InstallHint(){
+ const install=useInstall();
+ const [hidden,setHidden]=useState(()=>{try{return isStandalone()||localStorage.getItem('looproom-install-dismissed')==='1'}catch{return isStandalone()}});
+ const ios=isIOS();
+ if(hidden||(!ios&&!install.canPrompt))return null;
+ function dismiss(){setHidden(true);try{localStorage.setItem('looproom-install-dismissed','1')}catch{}}
+ return <div className="m-install" role="note">
+  <img src="/icons/icon-192.png" alt=""/>
+  <span><strong>Get the app</strong><small>{ios?<>Tap <Export size={12} weight="bold"/> Share, then “Add to Home Screen” for full screen.</>:'Install Looproom for a full-screen app on your home screen.'}</small></span>
+  {!ios&&<button className="m-install-btn" onClick={()=>install.prompt()}><DownloadSimple size={14} weight="bold"/> install</button>}
+  <button className="m-mini-btn" aria-label="Dismiss" onClick={dismiss}><X size={16}/></button>
+ </div>;
+}
 
 const tabs=[['now','now playing',Disc],['lyrics','lyrics',Quotes],['library','library',SquaresFour],['moods','moods',Sparkle]];
 
@@ -23,6 +39,7 @@ export default function MobileShell({s,genres}){
   </header>
   <main className={'m-view m-view-'+tab}>
    {tab==='now'&&<>
+    <InstallHint/>
     <PlayerDevice {...s}/>
     {lines.length>0&&<button className="m-lyric-peek" onClick={()=>setTab('lyrics')} aria-label="Open lyrics"><span className="eyebrow">lyrics</span><strong key={activeLine}>{lines[activeLine]?.text}</strong><ArrowUpRight size={16}/></button>}
    </>}

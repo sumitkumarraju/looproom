@@ -355,3 +355,11 @@ dialog::backdrop{background:#0007;backdrop-filter:blur(6px)}
 
 /* Karaoke fill: each word brightens left to right with a soft edge as it is sung, glowing and lifting slightly. */
 .sung-word{background:linear-gradient(90deg,#fff calc(var(--p) * 1.25 - 25%),#ffffff4d calc(var(--p) * 1.25)) ;-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 calc(var(--glow) * 16px) #ffffffa6);translate:0 calc(var(--glow) * -3px);transition:--p .12s linear,filter .5s ease,translate .6s var(--spring)}
+.m-install{display:flex;align-items:center;gap:10px;padding:10px;border:2px solid var(--edge);border-radius:14px;background:var(--lcd);color:var(--lcd-ink);box-shadow:4px 5px 0 -1px #0004;animation:toast-in .6s var(--spring) both}
+.m-install img{width:40px;height:40px;border-radius:9px;flex-shrink:0}
+.m-install>span{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.m-install strong{font-family:var(--pixel);font-size:11px;font-weight:400}
+.m-install small{font-size:12px;line-height:1.35;opacity:.8}
+.m-install-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;background:var(--lcd-ink);color:var(--lcd);font-family:var(--pixel);font-size:10px}
+/* Installed app: no browser chrome, so keep content clear of the status bar and home indicator. */
+@media (display-mode: standalone),(display-mode: fullscreen){body{overscroll-behavior:none}}

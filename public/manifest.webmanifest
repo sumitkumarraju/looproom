@@ -1,0 +1,19 @@
+{
+  "name": "Looproom — a little music escape",
+  "short_name": "Looproom",
+  "description": "A retro handheld music player with live synced lyrics.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "portrait",
+  "background_color": "#56745b",
+  "theme_color": "#56745b",
+  "categories": ["music", "entertainment"],
+  "icons": [
+    {"src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png"},
+    {"src": "/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+  ]
+}
