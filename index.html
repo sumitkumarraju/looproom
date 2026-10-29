@@ -13,6 +13,9 @@
  #splash b{display:block;height:100%;background:#fff;transform-origin:left;animation:splash-load 1.1s steps(10) .6s both}
  #splash button{margin-top:14px;padding:13px 26px;border:2px solid #fff;border-radius:999px;background:#ffffff1f;color:#fff;font-family:inherit;font-size:15px;font-weight:600;line-height:1;letter-spacing:.02em;cursor:pointer;backdrop-filter:blur(8px);animation:splash-rise .7s cubic-bezier(.22,1,.36,1) 1.5s both,splash-pulse 2.4s ease-in-out 2.4s infinite}
  #splash button:active{transform:scale(.96)}
+ /* The intro covers the glass-lens cursor, so it shows the normal pointer (overrides cursor:none). */
+ #splash,#splash *{cursor:default!important}
+ #splash button{cursor:pointer!important}
  @keyframes splash-pulse{50%{box-shadow:0 0 0 10px #ffffff1a}}
  #splash.is-leaving{opacity:0;pointer-events:none}
  #splash.is-leaving img{transform:scale(1.6)}
