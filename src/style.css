@@ -32,7 +32,7 @@ html{scroll-behavior:smooth}
 .eyebrow{font-family:var(--pixel);font-size:11px;letter-spacing:.04em;text-transform:lowercase;opacity:.82}
 .side-note{font-size:14px;line-height:1.5;opacity:.78;max-width:30ch;margin-top:16px}
 .chip{display:inline-flex;align-items:center;gap:7px;border:1px solid #ffffff66;border-radius:999px;padding:7px 14px;font-size:13px;background:#ffffff24;transition:background .25s ease,transform .3s var(--spring)}
-.chip:hover{background:#ffffff30}
+.chip:hover{background:color-mix(in srgb,var(--album-vivid) 55%,transparent);border-color:color-mix(in srgb,var(--album-vivid) 60%,#fff)}
 .icon-button{display:grid;place-items:center;width:34px;height:34px;border-radius:50%;transition:background .2s ease}
 .icon-button:hover{background:#ffffff22}
 .led{display:inline-block;width:7px;height:7px;border-radius:50%;background:#ffffff70;margin-right:8px;vertical-align:middle}
@@ -46,11 +46,11 @@ html{scroll-behavior:smooth}
 .retro-gradient{position:fixed;inset:0;z-index:-1;overflow:hidden;background:linear-gradient(40deg,var(--accent),color-mix(in srgb,var(--accent) 60%,#0b1020))}
 .gradient-blobs{position:absolute;inset:0}
 .blob{position:absolute;width:80vmax;height:80vmax;top:calc(50% - 40vmax);left:calc(50% - 40vmax);mix-blend-mode:hard-light;will-change:transform}
-.b1{background:radial-gradient(circle,var(--album-vivid) 0,color-mix(in srgb,var(--album-vivid) 70%,transparent) 30%,transparent 62%) no-repeat;animation:move-vertical 30s ease infinite;opacity:.9}
-.b2{background:radial-gradient(circle,color-mix(in srgb,var(--album) 85%,transparent) 0,transparent 60%) no-repeat;transform-origin:calc(50% - 400px);animation:move-circle 20s reverse infinite}
-.b3{background:radial-gradient(circle,color-mix(in srgb,var(--accent) 85%,transparent) 0,transparent 60%) no-repeat;transform-origin:calc(50% + 400px);animation:move-circle 40s linear infinite}
-.b4{background:radial-gradient(circle,color-mix(in srgb,var(--album-vivid) 70%,#fff3d6) 0,transparent 60%) no-repeat;transform-origin:calc(50% - 200px);animation:move-horizontal 40s ease infinite;opacity:.7}
-.b5{background:radial-gradient(circle,color-mix(in srgb,var(--accent) 70%,#000) 0,transparent 60%) no-repeat;transform-origin:calc(50% - 800px) calc(50% + 800px);animation:move-circle 20s ease infinite}
+.b1{background:radial-gradient(circle,var(--album-vivid) 0,color-mix(in srgb,var(--album-vivid) 70%,transparent) 30%,transparent 62%) no-repeat;animation:move-vertical 18s ease-in-out infinite;opacity:.9}
+.b2{background:radial-gradient(circle,color-mix(in srgb,var(--album) 85%,transparent) 0,transparent 60%) no-repeat;transform-origin:calc(50% - 400px);animation:move-circle 14s linear reverse infinite}
+.b3{background:radial-gradient(circle,color-mix(in srgb,var(--accent) 85%,transparent) 0,transparent 60%) no-repeat;transform-origin:calc(50% + 400px);animation:move-circle 22s linear infinite}
+.b4{background:radial-gradient(circle,color-mix(in srgb,var(--album-vivid) 70%,#fff3d6) 0,transparent 60%) no-repeat;transform-origin:calc(50% - 200px);animation:move-horizontal 24s ease-in-out infinite;opacity:.7}
+.b5{background:radial-gradient(circle,color-mix(in srgb,var(--accent) 70%,#000) 0,transparent 60%) no-repeat;transform-origin:calc(50% - 800px) calc(50% + 800px);animation:move-circle 16s linear infinite}
 .blob.pointer{width:60vmax;height:60vmax;top:-30vmax;left:-30vmax;background:radial-gradient(circle,color-mix(in srgb,var(--album-vivid) 75%,#fff) 0,transparent 60%) no-repeat;opacity:.55}
 .retro-gradient.is-paused .blob{animation-play-state:paused}
 /* Retro finish: film grain, CRT scanlines and a soft vignette. */
@@ -82,7 +82,7 @@ html:has(dialog[open]) .music-cursor,html:has(dialog[open]) .cursor-dot,html:has
 .topnav{position:relative;z-index:30;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px var(--gutter);font-size:15px}
 .nav-group{display:flex;align-items:center;gap:clamp(14px,2.4vw,30px)}
 .nav-group>a,.nav-group>button{display:inline-flex;align-items:center;gap:4px;opacity:.9}
-.nav-group>a:hover,.nav-group>button:hover{opacity:1;text-decoration:underline;text-underline-offset:4px}
+.nav-group>a:hover,.nav-group>button:hover{opacity:1}
 .brand{font-weight:800;letter-spacing:-.04em;font-size:19px}
 
 /* ---------- Hero ---------- */
@@ -395,9 +395,18 @@ html:has(.device-drag.is-dragging) .music-trail{opacity:0}
 /* ---------- Lite mode (slow hardware, see perf.js) ----------
    Keeps every feature but drops the costly extras: looping animations play once, the background
    blobs stop blending, the grain goes, and lyric blur/glow filters are removed. */
-.lite *,.lite *::before,.lite *::after{animation-iteration-count:1!important}
+/* The background keeps drifting in lite mode (just fewer, unblended blobs); other loops play once. */
+.lite :not(.blob),.lite :not(.blob)::before,.lite :not(.blob)::after{animation-iteration-count:1!important}
+.lite .b4,.lite .b5{display:none}
 .lite .blob{mix-blend-mode:normal;opacity:.75}
 .lite .retro-grain{display:none}
 .lite .lyric-line{filter:none!important;transition-property:transform,opacity}
 .lite .sung-word{filter:none;transition:--p .12s linear}
 .lite .music-cursor svg{filter:none}
+
+/* Highlighter hover: a marker stroke in the album colour sweeps in behind text controls. */
+:is(.nav-group>a,.nav-group>button,.mood,.tabs button,.footer-links button,.footer-links a,.collection-foot button,.theme-switch button,.album-card strong,.mix-card strong){--marker:color-mix(in srgb,var(--album-vivid) 62%,#fff);background-image:linear-gradient(100deg,color-mix(in srgb,var(--marker) 75%,transparent),color-mix(in srgb,var(--marker) 45%,transparent));background-repeat:no-repeat;background-position:0 88%;background-size:0% 48%;border-radius:3px;transition:background-size .4s var(--spring),opacity .2s ease,transform .6s var(--spring),border-color .2s ease}
+:is(.nav-group>a,.nav-group>button,.mood,.tabs button,.footer-links button,.footer-links a,.collection-foot button,.theme-switch button):hover,.album-card:hover strong,.mix-card:hover strong,.mood[aria-pressed=true]{background-size:100% 48%}
+/* Lyric lines keep their own spring transitions; the marker just appears under the hovered line. */
+.lyric-line{background-image:linear-gradient(100deg,color-mix(in srgb,color-mix(in srgb,var(--album-vivid) 62%,#fff) 60%,transparent),transparent);background-repeat:no-repeat;background-position:0 90%;background-size:0 30%}
+.lyric-line:hover{background-size:100% 30%}
