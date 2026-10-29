@@ -1,4 +1,5 @@
 import {useState} from 'react';
+import {themedIcon} from '../icon';
 import {Disc,SquaresFour,Sparkle,Play,Pause,SkipForward,Export,X,DownloadSimple} from '@phosphor-icons/react';
 import {useInstall,isStandalone,isIOS} from '../install';
 import {catalog} from '../catalog';
@@ -33,7 +34,7 @@ export default function MobileShell({s}){
  const {current,playing,connected,clientId,run,toggle,next,setModal}=s;
  return <div className="m-shell">
   <header className="m-top">
-   <span className="brand"><img className="brand-mark" src="/icons/logo-64.png" alt=""/>looproom</span>
+   <span className="brand"><span className="brand-mark" dangerouslySetInnerHTML={{__html:themedIcon}}/>looproom</span>
    <span className="flex items-center gap-2">
    <button className="chip" onClick={()=>connected?setModal('spotify'):run(()=>spotify.authorize(clientId))}><span className={'led '+(connected?'on':'')}/>{connected?'spotify':'connect'}</button></span>
   </header>
