@@ -7,6 +7,8 @@ import {loadMix as fetchMix,searchAll,moodMix,mixes,genres} from './mixes';
 import {findLyrics} from './lyrics';
 
 const EMPTY=[];
+// Spotify's names for the library genres that differ.
+const spotifyGenres={'Hip-Hop/Rap':'hip hop','R&B/Soul':'r&b','Drum & Bass':'drum and bass','Lo-Fi':'lo-fi','Deep House':'deep house'};
 
 // All player state and behaviour. Components receive slices of this as props.
 // Every function returned is a stable wrapper around its latest version, so memoised components
@@ -51,8 +53,9 @@ export function useLooproom(){
  // Once the listener has entered, a fresh list starts playing if nothing streamed was playing yet.
  function applyResults(found,playFirst){if(!found.length)throw Error('No songs found for that. Try another word.');setTracks(ts=>[...found,...ts.filter(t=>!remote(t))]);const s=live.current;if(playFirst||(s.entered&&!remote(s.current)&&s.mode!=='spotify'))return select(found[0])}
  async function loadMix(id,requestedMood=live.current.mood,playFirst=false){setMix(id);if(!id.startsWith('genre:'))setGenre('All genres');setBusy(true);try{await applyResults(await fetchMix(id,requestedMood),playFirst)}finally{setBusy(false)}}
- // Picking a genre loads that genre's trending tracks and starts playing them.
- function chooseGenre(g){setGenre(g);if(g!=='All genres')return loadMix('genre:'+g,mood,true)}
+ // Picking a genre plays that genre: Spotify's genre search when signed in, otherwise the free
+ // library's trending tracks for it.
+ function chooseGenre(g){setGenre(g);if(g==='All genres')return;if(mode==='spotify')return searchSpotify(`genre:"${spotifyGenres[g]||g.toLowerCase()}"`,mood,true);return loadMix('genre:'+g,mood,true)}
  async function searchMusic(query){if(!query.trim())return;if(mode==='spotify')return searchSpotify(query);setMix('search');setBusy(true);try{await applyResults(await searchAll(query,mood),true)}finally{setBusy(false)}}
  // Called from the intro's "tap to enter" (a user gesture, so the browser allows sound).
  function enter(){live.current.entered=true;if(live.current.mode==='spotify')return run(toggle);const first=live.current.tracks.find(remote);run(()=>first?select(first):audio.current.play())}
