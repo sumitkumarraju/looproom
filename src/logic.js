@@ -1,7 +1,7 @@
 export const moods = ['Daydream','Focus','Golden hour','After hours','Energy'];
 export function parseLrc(text) {
  const lines=[]; let offset=Number(text.match(/\[offset:([+-]?\d+)\]/)?.[1]||0)/1000;
- for(const line of text.split(/\r?\n/)) { const stamps=[...line.matchAll(/\[(\d+):(\d{2})(?:\.(\d{1,3}))?\]/g)]; const content=line.replace(/\[[^\]]*\]/g,'').trim(); for(const m of stamps) if(content) lines.push({time:Math.max(0,Number(m[1])*60+Number(m[2])+Number('0.'+(m[3]||0))+offset),text:content}); }
+ for(const line of text.split(/\r?\n/)) { const stamps=[...line.matchAll(/\[(\d+):(\d{2})(?:\.(\d{1,3}))?\]/g)]; const content=line.replace(/\[[^\]]*\]/g,'').replace(/<\d+:\d+(?:\.\d+)?>/g,'').replace(/\s+/g,' ').trim(); for(const m of stamps) if(content) lines.push({time:Math.max(0,Number(m[1])*60+Number(m[2])+Number('0.'+(m[3]||0))+offset),text:content}); }
  return lines.sort((a,b)=>a.time-b.time);
 }
 export function rankTracks(tracks,current,mood,genre,prefs={},recent=[]) {

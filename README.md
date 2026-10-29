@@ -54,8 +54,17 @@ Application code: MIT (LICENSE). Original audio, pixel SVG covers, and visual po
 
 React, Vite, Tailwind CSS, and Phosphor Icons use MIT licenses; installed dependency licenses remain in their packages. System font stacks are used without redistributing fonts. Spotify artwork, metadata, SDK, and audio remain governed by Spotify and their respective rightsholders; they are not covered by this project's MIT or CC0 licenses. Source available locally; no public GitHub repository has been created.
 
-## Sound-reactive album atmosphere
+## Default Spotify app and open-music fallback
 
-The background now combines album-colored soft light with a retro pixel spectrum. Demo and imported audio feed a Web Audio `AnalyserNode`; low-frequency energy shapes the light and frequency bands drive the spectrum. The graph is initialized/resumed only after a pointer or keyboard interaction, never requests microphone access, and is reused across tracks. If analysis is unavailable, the background falls back to gentle ambient movement. Spotify uses ambient movement only; its protected audio is not analyzed.
+- The app ships with a default public Client ID (`DEFAULT_CLIENT_ID` in `src/spotify.js`, overridable with `VITE_SPOTIFY_CLIENT_ID`). "connect spotify" in the header goes straight to Spotify sign-in.
+- Sign-in is remembered: the refresh token is stored in localStorage and the session is restored on reload. Disconnect clears it. Tradeoff: any script running on the page could read that token.
+- If Spotify cannot be used (no Premium, revoked access, SDK blocked, sign-in failure), Looproom switches to open-licensed music from the Internet Archive netlabels collection (Creative Commons releases, `src/openMusic.js`). Without Spotify, moods and the search box also fetch from there. Each open track links to its license and archive.org page.
 
-The Motion button hides the atmosphere. Playback pause, hidden tabs, and reduced-motion preferences stop the animation loop. Rendering is capped at about 30 fps, uses direct transform/opacity updates in an isolated memoized component, and does not trigger React renders per animation frame.
+## Look and motion
+
+The design follows a retro handheld: the player is a plastic device with an LCD screen (Silkscreen pixel font, bundled via `@fontsource/silkscreen`, OFL), confirm/cancel keys and a play knob, and it tilts toward the pointer.
+
+- Background: a port of Aceternity UI's background-gradient-animation, coloured from the current album cover. Album colours are registered CSS properties, so they cross-fade between tracks. Grain, scanlines and a vignette give it a retro finish. The Motion toggle pauses it.
+- Cursor: a liquid glass lens (port of Aceternity UI's liquid-glass) that follows the pointer and refracts the page beneath it. Chromium refracts; Safari and Firefox show frosted glass. It is used only on fine pointers without reduced motion; touch devices keep the native cursor.
+- Lyrics: Apple Music style. The active line pops in word by word, other lines blur with distance, and lines glide into place with a staggered spring.
+- Headings use the same blur-in word reveal. With reduced motion enabled, all animation is turned off.

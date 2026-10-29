@@ -1,0 +1,2 @@
+export function WindowBar({title,children}){return <div className="windowbar"><span>{title}</span><span className="flex items-center gap-1">{children}</span></div>}
+export function IconButton({label,children,onClick,active=false,...props}){return <button type="button" className={'icon-button '+(active?'is-active':'')} aria-label={label} title={label} onClick={onClick} {...props}>{children}</button>}
