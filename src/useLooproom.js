@@ -2,24 +2,27 @@ import {useState,useEffect,useRef,useMemo} from 'react';
 import {catalog,demoLines} from './catalog';
 import {rankTracks,parseLrc,readPrefs} from './logic';
 import * as spotify from './spotify';
-import {searchOpenMusic,moodTerms} from './openMusic';
+import {moodTerms} from './openMusic';
+import {loadMix as fetchMix,searchAll,moodMix,mixes} from './mixes';
 import {findLyrics} from './lyrics';
 
 // All player state and behaviour. Components receive slices of this as props.
 export function useLooproom(){
  const [backgroundMotion,setBackgroundMotion]=useState(true);
- const [tracks,setTracks]=useState(catalog),[current,setCurrent]=useState(catalog[0]),[playing,setPlaying]=useState(false),[time,setTime]=useState(0),[duration,setDuration]=useState(catalog[0].seconds),[volume,setVolume]=useState(.65),[mood,setMood]=useState('Daydream'),[genre,setGenre]=useState('All genres'),[prefs,setPrefs]=useState(readPrefs),[recent,setRecent]=useState([]),[repeat,setRepeat]=useState(false),[auto,setAuto]=useState(true),[focus,setFocus]=useState(false),[activeTab,setActiveTab]=useState('Room'),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[connected,setConnected]=useState(false),[device,setDevice]=useState(''),[search,setSearch]=useState(''),[modal,setModal]=useState(null),[clientId,setClientId]=useState(()=>localStorage.getItem('looproom-client')||spotify.DEFAULT_CLIENT_ID),[spotifyTracks,setSpotifyTracks]=useState([]),[mode,setMode]=useState('demo');
+ const [tracks,setTracks]=useState(catalog),[current,setCurrent]=useState(catalog[0]),[playing,setPlaying]=useState(false),[time,setTime]=useState(0),[duration,setDuration]=useState(catalog[0].seconds),[volume,setVolume]=useState(.65),[mood,setMood]=useState('Daydream'),[genre,setGenre]=useState('All genres'),[prefs,setPrefs]=useState(readPrefs),[recent,setRecent]=useState([]),[repeat,setRepeat]=useState(false),[auto,setAuto]=useState(true),[focus,setFocus]=useState(false),[activeTab,setActiveTab]=useState('Room'),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[connected,setConnected]=useState(false),[device,setDevice]=useState(''),[search,setSearch]=useState(''),[modal,setModal]=useState(null),[clientId,setClientId]=useState(()=>localStorage.getItem('looproom-client')||spotify.DEFAULT_CLIENT_ID),[spotifyTracks,setSpotifyTracks]=useState([]),[mode,setMode]=useState('demo'),[mix,setMix]=useState('daily');
  const audio=useRef(null),player=useRef(null),dialog=useRef(null),fileInput=useRef(null),lyricInput=useRef(null),artInput=useRef(null),urls=useRef([]),live=useRef({}),authStarted=useRef(false),selection=useRef(0),clock=useRef({pos:0,at:0});
  const queue=useMemo(()=>rankTracks(mode==='spotify'?spotifyTracks:tracks,current.id,mood,mode==='spotify'?'All genres':genre,prefs,recent),[tracks,spotifyTracks,current,mood,genre,prefs,recent,mode]);
  // Real songs (Spotify, open music, uploads) get synced lyrics looked up online; demo tracks keep their visual poem.
  const [found,setFound]=useState({});
- const lookupLyrics=!current.lyrics&&(current.spotify||current.open||current.upload);
+ const lookupLyrics=!current.lyrics&&(current.spotify||current.open||current.audius||current.upload);
  const lyricsStatus=current.lyrics?'own':!lookupLyrics?'demo':current.id in found?(found[current.id]?'found':'none'):'loading';
  const lines=current.lyrics||(lookupLyrics?found[current.id]||[]:demoLines);
+ // Streamed library tracks (Audius mixes, archive.org) as opposed to the bundled demo and uploads.
+ const remote=t=>t.audius||t.open;
  useEffect(()=>{if(!lookupLyrics||current.id in found)return;let active=true;const id=current.id;findLyrics(current).then(l=>{if(active)setFound(f=>({...f,[id]:l}))},()=>{if(active)setFound(f=>({...f,[id]:null}))});return()=>{active=false}},[current.id,lookupLyrics]);
  // Small lead so a line is on screen as it is sung, not after its entrance animation.
  const activeLine=Math.max(0,lines.findLastIndex(l=>l.time<=time+.15));
- live.current={current,queue,repeat,auto,mode,time,prefs,mood,spotifyTracks};
+ live.current={current,queue,repeat,auto,mode,time,prefs,mood,spotifyTracks,tracks,entered:live.current.entered};
  function notify(text){setMessage(text)}
  async function run(fn){try{await fn()}catch(e){notify(e.message||'Something went wrong. Please try again.')}}
  function preference(id,change){setPrefs(p=>{const next={...p,[id]:{...p[id],...change}};try{localStorage.setItem('looproom-prefs',JSON.stringify(next))}catch{}return next})}
@@ -38,13 +41,16 @@ export function useLooproom(){
  function seek(seconds){setTime(seconds);syncClock(seconds);run(async()=>{if(current.spotify)await player.current.seek(seconds*1000);else audio.current.currentTime=seconds})}
  async function changeVolume(v){setVolume(v);audio.current.volume=v;if(player.current)await player.current.setVolume(v)}
  async function searchSpotify(query,requestedMood=mood,playFirst=false){if(!query.trim())return;setBusy(true);try{const data=await spotify.api('/search?'+new URLSearchParams({q:query,type:'track',limit:'10'}));const found=(data.tracks?.items||[]).filter(Boolean).map(t=>spotify.mapTrack(t,requestedMood));setSpotifyTracks(found);if(!found.length)notify('No songs found. Try another artist or song.');if(playFirst&&found.length){await select(found[0]);}}finally{setBusy(false)}}
- async function chooseMood(m){setMood(m);if(mode==='spotify'&&connected){await searchSpotify(moodTerms[m],m,false);notify('Fresh picks are ready. Choose a track to start your new mood.')}else{await loadOpenMusic(moodTerms[m],m);notify(`${m} selected. Fresh open-licensed picks are in your room.`)}}
- // Replaces earlier open-music results; the bundled demo tracks and uploads stay.
- async function loadOpenMusic(query,requestedMood=live.current.mood,playFirst=false){setBusy(true);try{const found=await searchOpenMusic(query,requestedMood);if(!found.length)throw Error('No open music found for that. Try another word.');setTracks(ts=>[...ts.filter(t=>!t.open),...found]);if(playFirst)await select(found[0]);return found}finally{setBusy(false)}}
- function searchMusic(query){return mode==='spotify'?searchSpotify(query):loadOpenMusic(query,mood,true)}
- // Any fatal Spotify problem (no Premium, revoked access, SDK blocked) switches to open music.
- async function spotifyFallback(e){player.current?.disconnect();player.current=null;setConnected(false);setDevice('');setSpotifyTracks([]);setMode('demo');notify(`${e.message} Playing open-licensed music instead.`);await run(()=>loadOpenMusic(moodTerms[live.current.mood],live.current.mood,true))}
- useEffect(()=>{audio.current.volume=.65;audio.current.play().catch(()=>{});return ()=>urls.current.forEach(URL.revokeObjectURL)},[]);
+ async function chooseMood(m){setMood(m);if(mode==='spotify'&&connected){await searchSpotify(moodTerms[m],m,false);notify('Fresh picks are ready. Choose a track to start your new mood.')}else{await loadMix(moodMix[m],m);notify(`${m}: ${mixes.find(x=>x.id===moodMix[m]).name} is in your room.`)}}
+ // Loads a library mix (or search results) in place of the previous one; demo tracks and uploads stay.
+ // Once the listener has entered, a fresh list starts playing if nothing streamed was playing yet.
+ function applyResults(found,playFirst){if(!found.length)throw Error('No songs found for that. Try another word.');setTracks(ts=>[...ts.filter(t=>!remote(t)),...found]);const s=live.current;if(playFirst||(s.entered&&!remote(s.current)&&s.mode!=='spotify'))return select(found[0])}
+ async function loadMix(id,requestedMood=live.current.mood,playFirst=false){setMix(id);setBusy(true);try{await applyResults(await fetchMix(id,requestedMood),playFirst)}finally{setBusy(false)}}
+ async function searchMusic(query){if(!query.trim())return;if(mode==='spotify')return searchSpotify(query);setMix('search');setBusy(true);try{await applyResults(await searchAll(query,mood),true)}finally{setBusy(false)}}
+ // Called from the intro's "tap to enter" (a user gesture, so the browser allows sound).
+ function enter(){live.current.entered=true;if(live.current.mode==='spotify')return run(toggle);const first=live.current.tracks.find(remote);run(()=>first?select(first):audio.current.play())}
+ async function spotifyFallback(e){player.current?.disconnect();player.current=null;setConnected(false);setDevice('');setSpotifyTracks([]);setMode('demo');notify(`${e.message} Playing the free library instead.`);await run(()=>loadMix(moodMix[live.current.mood],live.current.mood,true))}
+ useEffect(()=>{audio.current.volume=.65;const start=()=>enter();addEventListener('looproom:enter',start);return()=>{removeEventListener('looproom:enter',start);urls.current.forEach(URL.revokeObjectURL)}},[]);
  // Playback clock: timeupdate (~4 Hz) and Spotify polling are too coarse for lyrics, so while playing
  // time is read every ~80 ms; Spotify position is interpolated from its last reported state.
  function syncClock(pos){clock.current={pos,at:performance.now()}}
@@ -67,7 +73,7 @@ export function useLooproom(){
   let signedIn=false;
   try{
    signedIn=await spotify.finishAuth()||spotify.restore();
-   if(!signedIn){await loadOpenMusic(moodTerms[live.current.mood]);return}
+   if(!signedIn){await loadMix('daily');return}
    audio.current.pause();setBusy(true);setMode('spotify');
    player.current=await spotify.connectPlayer(state=>{if(!state||live.current.mode!=='spotify')return;setPlaying(!state.paused);syncClock(state.position/1000);setTime(state.position/1000);setDuration(state.duration/1000);const t=state.track_window.current_track;if(t)setCurrent(old=>old.id===t.id?old:spotify.mapTrack(t,live.current.mood||'Daydream'))},(e,fatal)=>fatal?spotifyFallback(e):notify(/no list was loaded/i.test(e.message)?'Spotify is ready. Press play or pick a song to start.':e.message),id=>{setDevice(id);setConnected(true);notify('Spotify ready. Search for a song, or select a mood.');setModal(null)});
    await searchSpotify('dream pop');
@@ -82,5 +88,5 @@ export function useLooproom(){
  async function disconnect(){player.current?.disconnect();player.current=null;spotify.disconnect();setConnected(false);setDevice('');setSpotifyTracks([]);setMode('demo');await select(catalog[0],false);notify('Spotify disconnected. Sign in again whenever you like.')}
  const visibleTracks=activeTab==='Favorites'?(mode==='spotify'?spotifyTracks:tracks).filter(t=>prefs[t.id]?.liked):mode==='spotify'?spotifyTracks:tracks;
  const audioEvents={onPlay:()=>setPlaying(true),onPause:()=>{if(live.current.mode!=='spotify')setPlaying(false)},onTimeUpdate:()=>{if(live.current.mode!=='spotify')setTime(audio.current.currentTime)},onLoadedMetadata:()=>{if(live.current.mode!=='spotify')setDuration(audio.current.duration)},onEnded:()=>run(async()=>{const s=live.current;preference(s.current.id,{completed:(s.prefs[s.current.id]?.completed||0)+1});if(s.repeat){audio.current.currentTime=0;await audio.current.play()}else await next(false)}),onError:()=>{if(live.current.mode!=='spotify')notify('This audio could not be played. Try another track or a supported audio file.')}};
- return {backgroundMotion,setBackgroundMotion,tracks,current,playing,time,duration,volume,mood,genre,setGenre,prefs,setPrefs,repeat,setRepeat,auto,setAuto,focus,setFocus,activeTab,setActiveTab,message,setMessage,busy,connected,search,setSearch,modal,setModal,clientId,setClientId,mode,audio,dialog,fileInput,lyricInput,artInput,queue,lines,activeLine,notify,run,preference,like,select,next,toggle,previous,seek,changeVolume,searchSpotify,chooseMood,importAudio,importLyrics,importArt,disconnect,visibleTracks,searchMusic,lyricsStatus,fullscreen,toggleFullscreen,audioEvents}
+ return {backgroundMotion,setBackgroundMotion,tracks,current,playing,time,duration,volume,mood,genre,setGenre,prefs,setPrefs,repeat,setRepeat,auto,setAuto,focus,setFocus,activeTab,setActiveTab,message,setMessage,busy,connected,search,setSearch,modal,setModal,clientId,setClientId,mode,audio,dialog,fileInput,lyricInput,artInput,queue,lines,activeLine,notify,run,preference,like,select,next,toggle,previous,seek,changeVolume,searchSpotify,chooseMood,importAudio,importLyrics,importArt,disconnect,visibleTracks,searchMusic,mix,loadMix,lyricsStatus,fullscreen,toggleFullscreen,audioEvents}
 }

@@ -15,7 +15,7 @@ Open http://127.0.0.1:5173/. `npm run build` emits a standalone static site in `
 
 1. Sign in at https://developer.spotify.com/dashboard with your Premium account. Create an app and enable Web API and Web Playback SDK.
 2. Add this exact Redirect URI in its settings:
-   `https://looproom-radio-skr.tasty-chick-4700.chatgpt.site/`
+   `https://looproom-two.vercel.app/`
    For local development also add `http://127.0.0.1:5173/`. Spotify accepts HTTP loopback IP addresses; use 127.0.0.1 rather than localhost. If deploying elsewhere, register that HTTPS origin with its trailing slash instead.
 3. Add your Spotify account to the app's user allowlist if required. Current new development apps allow up to five users and require the owner to maintain Premium.
 4. Open Looproom → Connect Spotify. Paste the public Client ID, never a client secret, and complete Spotify authorization.
@@ -53,6 +53,14 @@ Spotify explicitly prohibits synchronized lyrics in its platform guidance. Its p
 Application code: MIT (LICENSE). Original audio, pixel SVG covers, and visual poem: CC0 1.0 dedication, https://creativecommons.org/publicdomain/zero/1.0/. Regenerate audio and covers using `python3 scripts/generate-assets.py` (Python standard library only).
 
 React, Vite, Tailwind CSS, and Phosphor Icons use MIT licenses; installed dependency licenses remain in their packages. System font stacks are used without redistributing fonts. Spotify artwork, metadata, SDK, and audio remain governed by Spotify and their respective rightsholders; they are not covered by this project's MIT or CC0 licenses. Source available locally; no public GitHub repository has been created.
+
+## Free library (no sign-in)
+
+Music plays for every visitor with no account. The intro's "tap to enter" starts it (browsers need one tap before sound).
+
+- **Mixes** (`src/mixes.js`): Daily Mix (three genres chosen by date), Party, Chill, Focus, Hip-Hop, Pop & Soul, After Hours, Trending Now and Open Archive. Moods pick a matching mix; search covers the whole catalog.
+- **Sources:** [Audius](https://audius.co), a free artist-uploaded network whose public API allows full-track streaming without a key (`src/audius.js`), and the Internet Archive's Creative Commons netlabels (`src/openMusic.js`), which is also the fallback if Audius is unreachable.
+- Mainstream label catalogs are not included: streaming them requires a licence. Spotify stays available as an optional sign-in for Premium users on the app's allowlist.
 
 ## Default Spotify app and open-music fallback
 

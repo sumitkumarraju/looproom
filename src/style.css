@@ -363,3 +363,21 @@ dialog::backdrop{background:#0007;backdrop-filter:blur(6px)}
 @media (display-mode: standalone),(display-mode: fullscreen){body{overscroll-behavior:none}}
 .brand{display:inline-flex;align-items:center;gap:9px}
 .brand-mark{width:30px;height:30px;border-radius:8px;box-shadow:0 4px 12px #0003,inset 0 0 0 1px #ffffff30}
+
+/* ---------- Library mixes (Spotify-style) ---------- */
+.mix-row{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(150px,170px);gap:16px;overflow-x:auto;padding:4px 2px 18px;margin-bottom:18px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.mix-row::-webkit-scrollbar{display:none}
+.mix-card{scroll-snap-align:start;display:flex;flex-direction:column;gap:3px;text-align:left;transition:transform .5s var(--spring)}
+.mix-card:hover{transform:translateY(-5px)}
+.mix-art{--storm-a:color-mix(in srgb,var(--tint) 55%,#fff);--storm-c:color-mix(in srgb,var(--tint) 35%,#1a1a1a);position:relative;display:grid;place-items:center;aspect-ratio:1;margin-bottom:8px;border-radius:10px;border:2px solid #ffffff38;background:radial-gradient(circle at 30% 25%,color-mix(in srgb,var(--tint) 60%,#fff) 0,var(--tint) 45%,color-mix(in srgb,var(--tint) 60%,#000) 100%);box-shadow:0 20px 34px -18px #000a,inset 0 -6px 0 #0000001f;overflow:hidden}
+.mix-art::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(0deg,#0000000d 0 1px,transparent 1px 3px)}
+.mix-art .glyph{width:52%;filter:drop-shadow(3px 4px 0 #00000030)}
+.mix-card.is-active .mix-art{outline:3px solid #fff;outline-offset:4px}
+.mix-card strong{font-size:15px;font-weight:750;letter-spacing:-.02em}
+.mix-card small{font-family:var(--pixel);font-size:9px;opacity:.72}
+@media (max-width:760px){.mix-row{grid-auto-columns:42%;gap:12px}}
+/* Hold-and-drag player (useSnapDrag): lifts while held, springs back on release. */
+.device-drag{position:relative;z-index:5;width:100%;display:flex;justify-content:center;cursor:grab;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.device-drag.is-dragging{cursor:grabbing;z-index:60}
+.device-drag .device-float{transition:scale .3s var(--spring),filter .3s ease}
+.device-drag.is-held .device-float,.device-drag.is-dragging .device-float{scale:1.04;filter:drop-shadow(0 30px 40px #0006)}

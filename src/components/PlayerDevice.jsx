@@ -4,10 +4,12 @@ import {catalog} from '../catalog';
 import {formatTime} from '../logic';
 import * as spotify from '../spotify';
 import KineticText from './KineticText';
+import {useSnapDrag} from '../useSnapDrag';
 
 // The player as a retro handheld: LCD screen, confirm/cancel keys and a play knob.
 export default function PlayerDevice({current,prefs,playing,time,duration,volume,mood,mode,repeat,setRepeat,queue,like,seek,run,next,previous,toggle,select,changeVolume}){
- const tilt=useRef(null);
+ const tilt=useRef(null),grab=useRef(null);
+ useSnapDrag(grab);
  const liked=!!prefs[current.id]?.liked;
  useEffect(()=>{
   const el=tilt.current;
@@ -19,7 +21,7 @@ export default function PlayerDevice({current,prefs,playing,time,duration,volume
   return()=>{cancelAnimationFrame(frame);removeEventListener('pointermove',move)};
  },[]);
  return <section className="device-wrap" aria-label="Player">
-  <div className="device-float"><div ref={tilt} className={'device '+(playing?'is-playing':'')}>
+  <div ref={grab} className="device-drag" title="Hold and drag me"><div className="device-float"><div ref={tilt} className={'device '+(playing?'is-playing':'')}>
    <div className="device-shoulders">
     <button className="shoulder" aria-label="Previous track" title="Previous track" onClick={()=>run(previous)}><SkipBack size={12} weight="fill"/></button>
     <button className="shoulder" aria-label="Surprise me" title="Surprise me" onClick={()=>run(()=>{if(!queue.length)return next();return select(queue[Math.floor(Math.random()*queue.length)])})}><Shuffle size={12} weight="bold"/></button>
@@ -45,7 +47,7 @@ export default function PlayerDevice({current,prefs,playing,time,duration,volume
      <button className="hw-key" aria-label="Skip track" onClick={()=>run(()=>next())}><X size={44} weight="bold"/><span>skip</span></button>
     </div>
    </div>
-  </div></div>
+  </div></div></div>
   <div className="device-under">
    <KineticText key={current.id} className="now-title" text={current.title}/>
    <div className="device-tags"><span className="chip">{current.genre}</span><span className="chip">{mood.toLowerCase()}</span>{current.open&&<a className="chip" href={current.license||current.url} target="_blank" rel="noreferrer">open license · archive.org <ArrowUpRight size={12}/></a>}{current.spotify&&<a className="chip" href={current.url||'https://open.spotify.com'} target="_blank" rel="noreferrer">open in spotify <ArrowUpRight size={12}/></a>}
