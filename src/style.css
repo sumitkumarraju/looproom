@@ -353,8 +353,6 @@ dialog::backdrop{background:#0007;backdrop-filter:blur(6px)}
 .is-fullscreen .stage{min-height:calc(100dvh - 70px);padding-top:2vh;padding-bottom:4vh}
 .is-fullscreen .topnav>nav{display:none}
 .is-fullscreen .topnav{justify-content:flex-end}
-.is-fullscreen .m-tabs,.is-fullscreen .m-mini{display:none}
-.is-fullscreen .m-view{padding-bottom:calc(24px + env(safe-area-inset-bottom))}
 
 /* Karaoke fill: each word brightens left to right with a soft edge as it is sung, glowing and lifting slightly. */
 .sung-word{background:linear-gradient(90deg,#fff calc(var(--p) * 1.25 - 25%),#ffffff4d calc(var(--p) * 1.25)) ;-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 calc(var(--glow) * 16px) #ffffffa6);translate:0 calc(var(--glow) * -3px);transition:--p .12s linear,filter .5s ease,translate .6s var(--spring)}

@@ -1,7 +1,6 @@
 import {useState} from 'react';
-import {Disc,SquaresFour,Sparkle,Play,Pause,SkipForward,CornersOut,CornersIn,Export,X,DownloadSimple} from '@phosphor-icons/react';
+import {Disc,SquaresFour,Sparkle,Play,Pause,SkipForward,Export,X,DownloadSimple} from '@phosphor-icons/react';
 import {useInstall,isStandalone,isIOS} from '../install';
-import {IconButton} from './ui';
 import {catalog} from '../catalog';
 import * as spotify from '../spotify';
 import PlayerDevice from './PlayerDevice';
@@ -31,11 +30,11 @@ const tabs=[['now','now playing',Disc],['library','library',SquaresFour],['moods
 // every desktop feature is reachable from the three tabs.
 export default function MobileShell({s}){
  const [tab,setTab]=useState('now');
- const {current,playing,connected,clientId,run,toggle,next,setModal,fullscreen,toggleFullscreen}=s;
+ const {current,playing,connected,clientId,run,toggle,next,setModal}=s;
  return <div className="m-shell">
   <header className="m-top">
    <span className="brand"><img className="brand-mark" src="/icons/logo-64.png" alt=""/>looproom</span>
-   <span className="flex items-center gap-2">{<IconButton label={fullscreen?'Exit full screen':'Full screen'} onClick={()=>run(toggleFullscreen)}>{fullscreen?<CornersIn size={18}/>:<CornersOut size={18}/>}</IconButton>}
+   <span className="flex items-center gap-2">
    <button className="chip" onClick={()=>connected?setModal('spotify'):run(()=>spotify.authorize(clientId))}><span className={'led '+(connected?'on':'')}/>{connected?'spotify':'connect'}</button></span>
   </header>
   <main className={'m-view m-view-'+tab}>
