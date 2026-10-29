@@ -306,13 +306,11 @@ dialog::backdrop{background:#0007;backdrop-filter:blur(6px)}
 .m-view{flex:1;padding:8px 16px calc(150px + env(safe-area-inset-bottom))}
 .m-view-now{display:flex;flex-direction:column;gap:18px;padding-top:12px}
 .m-view-now .device-float{max-width:none}
-.m-lyric-peek{display:grid;grid-template-columns:1fr auto;align-items:center;gap:2px 12px;width:100%;padding:14px 16px;border:1px solid #ffffff4d;border-radius:16px;background:#ffffff16;backdrop-filter:blur(10px);text-align:left}
-.m-lyric-peek .eyebrow{grid-column:1/-1}
-.m-lyric-peek strong{font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.1;animation:word-in .7s var(--spring) both}
-.m-view-lyrics .lyrics-viewport{height:calc(100dvh - 300px)}
-.m-view-lyrics .storm{height:calc(100dvh - 300px)}
-.m-view-lyrics .lyric-line{font-size:clamp(28px,8.5vw,40px)}
-.m-view-lyrics .icon-button[aria-label*="ocus"]{display:none}
+.m-view-now .lyrics-viewport{height:62dvh}
+.m-view-now .storm{height:62dvh}
+.m-view-now .lyric-line{font-size:clamp(28px,8.5vw,40px)}
+.m-view-now .icon-button[aria-label*="ocus"]{display:none}
+.m-view-now .lyrics{margin-top:6px}
 .m-view-library .collection{padding:4px 0 0}
 .m-view-library .collection-head h2{font-size:44px}
 .m-view-library .collection-actions{gap:12px}
@@ -331,7 +329,7 @@ dialog::backdrop{background:#0007;backdrop-filter:blur(6px)}
 .m-mini-track small{font-size:9px;opacity:.65}
 .m-mini-btn{display:grid;place-items:center;width:42px;height:42px;border-radius:50%}
 .m-mini-btn:active{background:#0000001a}
-.m-tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(4,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom));border-top:2px solid #ffffff2e;background:color-mix(in srgb,var(--accent) 60%,#000a);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4)}
+.m-tabs{position:fixed;left:0;right:0;bottom:0;z-index:40;display:grid;grid-template-columns:repeat(3,1fr);padding:6px 6px calc(6px + env(safe-area-inset-bottom));border-top:2px solid #ffffff2e;background:color-mix(in srgb,var(--accent) 60%,#000a);backdrop-filter:blur(18px) saturate(1.4);-webkit-backdrop-filter:blur(18px) saturate(1.4)}
 .m-tabs button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:6px 0;border-radius:10px;opacity:.6;transition:opacity .2s ease,background .2s ease}
 .m-tabs button span{font-family:var(--pixel);font-size:8px;letter-spacing:.02em}
 .m-tabs button[aria-current=page]{opacity:1;background:#ffffff1f}
@@ -363,3 +361,5 @@ dialog::backdrop{background:#0007;backdrop-filter:blur(6px)}
 .m-install-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;background:var(--lcd-ink);color:var(--lcd);font-family:var(--pixel);font-size:10px}
 /* Installed app: no browser chrome, so keep content clear of the status bar and home indicator. */
 @media (display-mode: standalone),(display-mode: fullscreen){body{overscroll-behavior:none}}
+.brand{display:inline-flex;align-items:center;gap:9px}
+.brand-mark{width:30px;height:30px;border-radius:8px;box-shadow:0 4px 12px #0003,inset 0 0 0 1px #ffffff30}

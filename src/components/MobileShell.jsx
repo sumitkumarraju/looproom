@@ -1,5 +1,5 @@
 import {useState} from 'react';
-import {Disc,Quotes,SquaresFour,Sparkle,Play,Pause,SkipForward,ArrowUpRight,CornersOut,CornersIn,Export,X,DownloadSimple} from '@phosphor-icons/react';
+import {Disc,SquaresFour,Sparkle,Play,Pause,SkipForward,CornersOut,CornersIn,Export,X,DownloadSimple} from '@phosphor-icons/react';
 import {useInstall,isStandalone,isIOS} from '../install';
 import {IconButton} from './ui';
 import {catalog} from '../catalog';
@@ -24,16 +24,17 @@ function InstallHint(){
  </div>;
 }
 
-const tabs=[['now','now playing',Disc],['lyrics','lyrics',Quotes],['library','library',SquaresFour],['moods','moods',Sparkle]];
+const tabs=[['now','now playing',Disc],['library','library',SquaresFour],['moods','moods',Sparkle]];
 
 // Phone layout: an app-style shell (like Apple Music) with a bottom tab bar and a mini player,
-// dressed as the same retro handheld. Every desktop feature is reachable from the four tabs.
+// dressed as the same retro handheld. Now playing shows the player with live lyrics right under it;
+// every desktop feature is reachable from the three tabs.
 export default function MobileShell({s,genres}){
  const [tab,setTab]=useState('now');
- const {current,playing,lines,activeLine,connected,clientId,run,toggle,next,setModal,fullscreen,toggleFullscreen}=s;
+ const {current,playing,connected,clientId,run,toggle,next,setModal,fullscreen,toggleFullscreen}=s;
  return <div className="m-shell">
   <header className="m-top">
-   <span className="brand">looproom</span>
+   <span className="brand"><img className="brand-mark" src="/icons/logo-64.png" alt=""/>looproom</span>
    <span className="flex items-center gap-2">{<IconButton label={fullscreen?'Exit full screen':'Full screen'} onClick={()=>run(toggleFullscreen)}>{fullscreen?<CornersIn size={18}/>:<CornersOut size={18}/>}</IconButton>}
    <button className="chip" onClick={()=>connected?setModal('spotify'):run(()=>spotify.authorize(clientId))}><span className={'led '+(connected?'on':'')}/>{connected?'spotify':'connect'}</button></span>
   </header>
@@ -41,9 +42,8 @@ export default function MobileShell({s,genres}){
    {tab==='now'&&<>
     <InstallHint/>
     <PlayerDevice {...s}/>
-    {lines.length>0&&<button className="m-lyric-peek" onClick={()=>setTab('lyrics')} aria-label="Open lyrics"><span className="eyebrow">lyrics</span><strong key={activeLine}>{lines[activeLine]?.text}</strong><ArrowUpRight size={16}/></button>}
+    <LyricWindow {...s}/>
    </>}
-   {tab==='lyrics'&&<LyricWindow {...s}/>}
    {tab==='library'&&<Collection {...s}/>}
    {tab==='moods'&&<MoodList {...s} genres={genres}/>}
   </main>
