@@ -54,6 +54,16 @@ Application code: MIT (LICENSE). Original audio, pixel SVG covers, and visual po
 
 React, Vite, Tailwind CSS, and Phosphor Icons use MIT licenses; installed dependency licenses remain in their packages. System font stacks are used without redistributing fonts. Spotify artwork, metadata, SDK, and audio remain governed by Spotify and their respective rightsholders; they are not covered by this project's MIT or CC0 licenses. Source available locally; no public GitHub repository has been created.
 
+## YouTube (full mainstream catalogue)
+
+With a YouTube Data API key configured, search covers almost any song and a **Top Hits** mix appears. Songs play in YouTube's official embedded player, shown inside the handheld's screen (or as a floating mini player when the screen is out of view), as YouTube requires its player to stay visible. Videos whose owners block embedding are skipped.
+
+Setup (once):
+1. In [Google Cloud Console](https://console.cloud.google.com/), create a project, enable **YouTube Data API v3**, and create an **API key** (restrict it to that API).
+2. In Vercel → project **looproom** → Settings → Environment Variables, add `YOUTUBE_API_KEY` for Production, then redeploy.
+
+The key is only used by the serverless function `api/youtube-search.js`; it never reaches the browser. Results are cached at the edge for a day; the default quota allows roughly 100 uncached searches per day. Without a key, the site uses the free library.
+
 ## Free library (no sign-in)
 
 Music plays for every visitor with no account. The intro's "tap to enter" starts it (browsers need one tap before sound).

@@ -1,9 +1,12 @@
 // The library: Spotify-style mixes built from free sources (Audius trending by genre, plus the
-// Internet Archive's Creative Commons netlabels). No sign-in; every track streams in full.
+// Internet Archive's Creative Commons netlabels), and Top Hits from YouTube when the site has a
+// YouTube key. No sign-in; every track plays in full.
 import * as audius from './audius';
 import {searchOpenMusic} from './openMusic';
+import * as youtube from './youtube';
 
 export const mixes=[
+ {id:'hits',name:'Top Hits',note:'chart songs · youtube',glyph:'star',tint:'#d9465a',youtube:'top hits this week official audio',genres:['Pop','Hip-Hop/Rap','R&B/Soul'],mood:'Energy'},
  {id:'daily',name:'Daily Mix',note:'fresh every day',glyph:'sun',tint:'#f2b06b'},
  {id:'party',name:'Party Mix',note:'house · dance · hip-hop',glyph:'confetti',tint:'#e2577a',genres:['House','Electronic','Hip-Hop/Rap'],mood:'Energy'},
  {id:'chill',name:'Chill Mix',note:'lo-fi · downtempo',glyph:'cloud',tint:'#7fa7c9',genres:['Lo-Fi','Downtempo','Ambient'],mood:'Daydream'},
@@ -33,6 +36,7 @@ export async function loadMix(id,mood){
  const mix=mixes.find(m=>m.id===id)||mixes[0];
  const m=mix.mood||mood;
  if(mix.archive)return searchOpenMusic(mix.archive,m);
+ if(mix.youtube){const found=await youtube.search(mix.youtube,m).catch(()=>[]);if(found.length)return found}
  const genres=mix.id==='daily'?dailyGenres():mix.genres;
  const lists=await Promise.allSettled(genres.map(g=>audius.trending(g,m,40)));
  const tracks=unique(lists.flatMap(r=>r.status==='fulfilled'?r.value:[]));

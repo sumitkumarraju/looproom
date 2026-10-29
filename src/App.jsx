@@ -3,6 +3,7 @@ import {useAlbumColors} from './useAlbumColors';
 import {catalog} from './catalog';
 import RetroGradient from './components/RetroGradient';
 import MusicCursor from './components/MusicCursor';
+import YouTubeStage from './components/YouTubeStage';
 import KineticText from './components/KineticText';
 import TopBar from './components/TopBar';
 import MoodList from './components/MoodList';
@@ -29,6 +30,7 @@ export default function App(){
  return <div id="top" className={'site '+(focus?'focus-mode ':'')+(s.fullscreen?'is-fullscreen':'')}>
   <RetroGradient enabled={backgroundMotion}/>
   <MusicCursor/>
+  <YouTubeStage host={s.ytHost} active={!!current.youtube}/>
   {phone?<MobileShell s={s}/>:<>
   <TopBar {...s}/>
   <main>

@@ -30,12 +30,16 @@ export default function PlayerDevice({current,prefs,playing,time,duration,volume
     <button className="shoulder" aria-label="Next track" title="Next track" onClick={()=>run(()=>next())}><SkipForward size={12} weight="fill"/></button>
    </div>
    <div className="device-body">
-    <div className="lcd">
-     <div className="lcd-status"><span>{mode==='spotify'?'spotify':current.open?'open fm':'radio'}</span><span>{current.bpm?current.bpm+' bpm':'stereo'}</span><span>{Math.round(volume*100)}% ▮</span></div>
-     <div className="lcd-main" key={current.id}>
+    <div className={'lcd'+(current.youtube?' is-video':'')}>
+     <div className="lcd-status"><span>{mode==='spotify'?'spotify':current.youtube?'youtube':current.open?'open fm':'radio'}</span><span>{current.bpm?current.bpm+' bpm':'stereo'}</span><span>{Math.round(volume*100)}% ▮</span></div>
+     {current.youtube?<div className="lcd-video" key={current.id}>
+      {/* YouTubeStage lays the YouTube player exactly over this screen area. */}
+      <div className="yt-slot"/>
+      <div className="lcd-video-meta"><strong className="lcd-title">{current.title}</strong><span className="lcd-meta">{current.artist} · youtube</span></div>
+     </div>:<div className="lcd-main" key={current.id}>
       <img src={current.cover||catalog[0].cover} alt={current.album+' album cover'}/>
       <div><span className="lcd-meta">♪ {playing?'now playing':'paused'}</span><strong className="lcd-title">{current.title}</strong><span className="lcd-meta">{current.artist}</span><span className="lcd-meta lcd-album">{current.album}</span>{liked&&<span className="lcd-meta"><Heart size={10} weight="fill"/> fav</span>}</div>
-     </div>
+     </div>}
      <div className="lcd-progress">
       <label className="sr-only" htmlFor="seek">Track position</label>
       <input id="seek" type="range" min="0" max={duration||1} step=".1" value={Math.min(time,duration||1)} onChange={e=>seek(Number(e.target.value))} style={{'--progress':`${duration?time/duration*100:0}%`}}/>
