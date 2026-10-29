@@ -73,6 +73,7 @@ Music plays for every visitor with no account. The intro's "tap to enter" starts
 The design follows a retro handheld: the player is a plastic device with an LCD screen (Silkscreen pixel font, bundled via `@fontsource/silkscreen`, OFL), confirm/cancel keys and a play knob, and it tilts toward the pointer.
 
 - Background: a port of Aceternity UI's background-gradient-animation, coloured from the current album cover. Album colours are registered CSS properties, so they cross-fade between tracks. Grain, scanlines and a vignette give it a retro finish. The Motion toggle pauses it.
-- Cursor: a liquid glass lens (port of Aceternity UI's liquid-glass) that follows the pointer and refracts the page beneath it. Chromium refracts; Safari and Firefox show frosted glass. It is used only on fine pointers without reduced motion; touch devices keep the native cursor.
+- Cursor: a drawn music note (beamed notes over buttons) that leaves a fading trail of notes and the musical alphabet (C–G, A, B). Fine pointers only; touch devices keep the native behaviour.
+- Performance: only transform/opacity animate; no full-screen blur or backdrop-blur over the moving background; parts of the page that don't show playback time skip the clock's re-renders. Slower devices (≤4 cores/≤4 GB, or under ~40 fps measured after load) switch to a lite mode that drops looping animations, blend modes, grain and lyric blur.
 - Lyrics: Apple Music style. The active line pops in word by word, other lines blur with distance, and lines glide into place with a staggered spring.
 - Headings use the same blur-in word reveal. With reduced motion enabled, all animation is turned off.

@@ -2,7 +2,7 @@ import {useLooproom} from './useLooproom';
 import {useAlbumColors} from './useAlbumColors';
 import {catalog} from './catalog';
 import RetroGradient from './components/RetroGradient';
-import GlassCursor from './components/GlassCursor';
+import MusicCursor from './components/MusicCursor';
 import KineticText from './components/KineticText';
 import TopBar from './components/TopBar';
 import MoodList from './components/MoodList';
@@ -12,7 +12,7 @@ import Collection from './components/Collection';
 import Dialogs from './components/Dialogs';
 import {Footer,Toast} from './components/Chrome';
 import MobileShell from './components/MobileShell';
-import {useEffect,useState} from 'react';
+import {useEffect,useMemo,useState} from 'react';
 
 const PHONE='(max-width: 760px)';
 function useIsPhone(){
@@ -26,10 +26,10 @@ export default function App(){
  const {current,focus,audio,backgroundMotion,tracks,fileInput,lyricInput,artInput,run,importAudio,importLyrics,importArt,message,setMessage}=s;
  useAlbumColors(current.cover,current.colors);
  const phone=useIsPhone();
- const genres=['All genres',...new Set(tracks.map(t=>t.genre))];
+ const genres=useMemo(()=>['All genres',...new Set(tracks.map(t=>t.genre))],[tracks]);
  return <div id="top" className={'site '+(focus?'focus-mode ':'')+(s.fullscreen?'is-fullscreen':'')}>
   <RetroGradient enabled={backgroundMotion}/>
-  <GlassCursor/>
+  <MusicCursor/>
   {phone?<MobileShell s={s} genres={genres}/>:<>
   <TopBar {...s}/>
   <main>

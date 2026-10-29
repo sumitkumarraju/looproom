@@ -6,8 +6,13 @@ import {moodTerms} from './openMusic';
 import {loadMix as fetchMix,searchAll,moodMix,mixes} from './mixes';
 import {findLyrics} from './lyrics';
 
+const EMPTY=[];
+
 // All player state and behaviour. Components receive slices of this as props.
+// Every function returned is a stable wrapper around its latest version, so memoised components
+// (see memoIgnoringClock) can skip the ~12 renders a second that the playback clock causes.
 export function useLooproom(){
+ const latest=useRef({}),stable=useRef({});
  const [backgroundMotion,setBackgroundMotion]=useState(true);
  const [tracks,setTracks]=useState(catalog),[current,setCurrent]=useState(catalog[0]),[playing,setPlaying]=useState(false),[time,setTime]=useState(0),[duration,setDuration]=useState(catalog[0].seconds),[volume,setVolume]=useState(.65),[mood,setMood]=useState('Daydream'),[genre,setGenre]=useState('All genres'),[prefs,setPrefs]=useState(readPrefs),[recent,setRecent]=useState([]),[repeat,setRepeat]=useState(false),[auto,setAuto]=useState(true),[focus,setFocus]=useState(false),[activeTab,setActiveTab]=useState('Room'),[message,setMessage]=useState(''),[busy,setBusy]=useState(false),[connected,setConnected]=useState(false),[device,setDevice]=useState(''),[search,setSearch]=useState(''),[modal,setModal]=useState(null),[clientId,setClientId]=useState(()=>localStorage.getItem('looproom-client')||spotify.DEFAULT_CLIENT_ID),[spotifyTracks,setSpotifyTracks]=useState([]),[mode,setMode]=useState('demo'),[mix,setMix]=useState('daily');
  const audio=useRef(null),player=useRef(null),dialog=useRef(null),fileInput=useRef(null),lyricInput=useRef(null),artInput=useRef(null),urls=useRef([]),live=useRef({}),authStarted=useRef(false),selection=useRef(0),clock=useRef({pos:0,at:0});
@@ -16,7 +21,7 @@ export function useLooproom(){
  const [found,setFound]=useState({});
  const lookupLyrics=!current.lyrics&&(current.spotify||current.open||current.audius||current.upload);
  const lyricsStatus=current.lyrics?'own':!lookupLyrics?'demo':current.id in found?(found[current.id]?'found':'none'):'loading';
- const lines=current.lyrics||(lookupLyrics?found[current.id]||[]:demoLines);
+ const lines=current.lyrics||(lookupLyrics?found[current.id]||EMPTY:demoLines);
  // Streamed library tracks (Audius mixes, archive.org) as opposed to the bundled demo and uploads.
  const remote=t=>t.audius||t.open;
  useEffect(()=>{if(!lookupLyrics||current.id in found)return;let active=true;const id=current.id;findLyrics(current).then(l=>{if(active)setFound(f=>({...f,[id]:l}))},()=>{if(active)setFound(f=>({...f,[id]:null}))});return()=>{active=false}},[current.id,lookupLyrics]);
@@ -86,7 +91,9 @@ export function useLooproom(){
  async function importLyrics(f){if(!f)return;const lyrics=parseLrc(await f.text());if(!lyrics.length)throw Error('No timed lyrics found. Use an .lrc file with [00:12.50] timestamps.');const updated={...current,lyrics};setCurrent(updated);setTracks(ts=>ts.map(t=>t.id===current.id?updated:t));notify('Lyrics synced. Tap any line to jump to it.')}
  function importArt(f){if(!f)return;if(!f.type.startsWith('image/'))return notify('Choose an image file.');const cover=URL.createObjectURL(f);urls.current.push(cover);setCurrent(t=>({...t,cover}));setTracks(ts=>ts.map(t=>t.id===current.id?{...t,cover}:t))}
  async function disconnect(){player.current?.disconnect();player.current=null;spotify.disconnect();setConnected(false);setDevice('');setSpotifyTracks([]);setMode('demo');await select(catalog[0],false);notify('Spotify disconnected. Sign in again whenever you like.')}
- const visibleTracks=activeTab==='Favorites'?(mode==='spotify'?spotifyTracks:tracks).filter(t=>prefs[t.id]?.liked):mode==='spotify'?spotifyTracks:tracks;
- const audioEvents={onPlay:()=>setPlaying(true),onPause:()=>{if(live.current.mode!=='spotify')setPlaying(false)},onTimeUpdate:()=>{if(live.current.mode!=='spotify')setTime(audio.current.currentTime)},onLoadedMetadata:()=>{if(live.current.mode!=='spotify')setDuration(audio.current.duration)},onEnded:()=>run(async()=>{const s=live.current;preference(s.current.id,{completed:(s.prefs[s.current.id]?.completed||0)+1});if(s.repeat){audio.current.currentTime=0;await audio.current.play()}else await next(false)}),onError:()=>{if(live.current.mode!=='spotify')notify('This audio could not be played. Try another track or a supported audio file.')}};
- return {backgroundMotion,setBackgroundMotion,tracks,current,playing,time,duration,volume,mood,genre,setGenre,prefs,setPrefs,repeat,setRepeat,auto,setAuto,focus,setFocus,activeTab,setActiveTab,message,setMessage,busy,connected,search,setSearch,modal,setModal,clientId,setClientId,mode,audio,dialog,fileInput,lyricInput,artInput,queue,lines,activeLine,notify,run,preference,like,select,next,toggle,previous,seek,changeVolume,searchSpotify,chooseMood,importAudio,importLyrics,importArt,disconnect,visibleTracks,searchMusic,mix,loadMix,lyricsStatus,fullscreen,toggleFullscreen,audioEvents}
+ const visibleTracks=useMemo(()=>{const list=mode==='spotify'?spotifyTracks:tracks;return activeTab==='Favorites'?list.filter(t=>prefs[t.id]?.liked):list},[activeTab,mode,spotifyTracks,tracks,prefs]);
+ const audioEvents=useMemo(()=>({onPlay:()=>setPlaying(true),onPause:()=>{if(live.current.mode!=='spotify')setPlaying(false)},onTimeUpdate:()=>{if(live.current.mode!=='spotify')setTime(audio.current.currentTime)},onLoadedMetadata:()=>{if(live.current.mode!=='spotify')setDuration(audio.current.duration)},onEnded:()=>latest.current.run(async()=>{const s=live.current;latest.current.preference(s.current.id,{completed:(s.prefs[s.current.id]?.completed||0)+1});if(s.repeat){audio.current.currentTime=0;await audio.current.play()}else await latest.current.next(false)}),onError:()=>{if(live.current.mode!=='spotify')latest.current.notify('This audio could not be played. Try another track or a supported audio file.')}}),[]);
+ const api={backgroundMotion,setBackgroundMotion,tracks,current,playing,time,duration,volume,mood,genre,setGenre,prefs,setPrefs,repeat,setRepeat,auto,setAuto,focus,setFocus,activeTab,setActiveTab,message,setMessage,busy,connected,search,setSearch,modal,setModal,clientId,setClientId,mode,audio,dialog,fileInput,lyricInput,artInput,queue,lines,activeLine,notify,run,preference,like,select,next,toggle,previous,seek,changeVolume,searchSpotify,chooseMood,importAudio,importLyrics,importArt,disconnect,visibleTracks,searchMusic,mix,loadMix,lyricsStatus,fullscreen,toggleFullscreen,audioEvents};
+ for(const [k,v] of Object.entries(api))if(typeof v==='function'){latest.current[k]=v;stable.current[k]??=(...args)=>latest.current[k](...args);api[k]=stable.current[k]}
+ return api;
 }

@@ -4,10 +4,11 @@ import {formatTime} from '../logic';
 import KineticText from './KineticText';
 import Glyph from './Glyph';
 import {mixes} from '../mixes';
+import {memoIgnoringClock} from '../memo';
 
 const headings={'Room':'your mix.','Up next':'up next.','Favorites':'favorites.'};
 
-export default function Collection({mix,loadMix,mood,tracks,queue,visibleTracks,current,playing,mode,activeTab,setActiveTab,auto,setAuto,busy,connected,search,setSearch,run,select,searchMusic,setModal,fileInput}){
+function Collection({mix,loadMix,mood,tracks,queue,visibleTracks,current,playing,mode,activeTab,setActiveTab,auto,setAuto,busy,connected,search,setSearch,run,select,searchMusic,setModal,fileInput}){
  const shown=activeTab==='Up next'?queue:visibleTracks;
  const heading=activeTab==='Room'&&mode!=='spotify'?(mix==='search'?'search results.':`${(mixes.find(m=>m.id===mix)?.name||'your mix').toLowerCase()}.`):headings[activeTab];
  return <section className="collection" id="room">
@@ -30,3 +31,5 @@ export default function Collection({mix,loadMix,mood,tracks,queue,visibleTracks,
   <div className="collection-foot"><span><span className="led on"/>{auto?'The next good song is already on its way.':'Your collection, in order.'}</span><button onClick={()=>setModal('about')}>how autopilot works <ArrowUpRight size={13}/></button></div>
  </section>
 }
+
+export default memoIgnoringClock(Collection);

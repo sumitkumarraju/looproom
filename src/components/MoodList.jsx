@@ -1,6 +1,7 @@
+import {memoIgnoringClock} from '../memo';
 import {moods} from '../logic';
 
-export default function MoodList({mood,genre,setGenre,genres,mode,run,chooseMood}){
+function MoodList({mood,genre,setGenre,genres,mode,run,chooseMood}){
  return <aside className="side-copy">
   <p className="eyebrow">how’s your world today?</p>
   <ul className="mood-stack">{moods.map((m,i)=><li key={m}><button className="mood" aria-pressed={mood===m} onClick={()=>run(()=>chooseMood(m))}><span className="mood-n">0{i+1}</span>{m.toLowerCase()}</button></li>)}</ul>
@@ -8,3 +9,5 @@ export default function MoodList({mood,genre,setGenre,genres,mode,run,chooseMood
   <p className="side-note">{mode==='spotify'?'Pick a mood to find songs on Spotify.':'Your next song follows your mood — less scrolling, more listening.'}</p>
  </aside>
 }
+
+export default memoIgnoringClock(MoodList);

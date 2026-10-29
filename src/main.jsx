@@ -3,7 +3,9 @@ import {createRoot} from 'react-dom/client';
 import App from './App';
 import '@fontsource/silkscreen/400.css';
 import './style.css';
+import {startPerformanceGuard} from './perf';
 
+startPerformanceGuard();
 createRoot(document.getElementById('root')).render(<App/>);
 
 // "Tap to enter" on the intro: start the music (the tap is the gesture browsers require for
