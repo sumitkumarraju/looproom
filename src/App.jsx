@@ -12,7 +12,7 @@ import Collection from './components/Collection';
 import Dialogs from './components/Dialogs';
 import {Footer,Toast} from './components/Chrome';
 import MobileShell from './components/MobileShell';
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useState} from 'react';
 
 const PHONE='(max-width: 760px)';
 function useIsPhone(){
@@ -26,16 +26,15 @@ export default function App(){
  const {current,focus,audio,backgroundMotion,tracks,fileInput,lyricInput,artInput,run,importAudio,importLyrics,importArt,message,setMessage}=s;
  useAlbumColors(current.cover,current.colors);
  const phone=useIsPhone();
- const genres=useMemo(()=>['All genres',...new Set(tracks.map(t=>t.genre))],[tracks]);
  return <div id="top" className={'site '+(focus?'focus-mode ':'')+(s.fullscreen?'is-fullscreen':'')}>
   <RetroGradient enabled={backgroundMotion}/>
   <MusicCursor/>
-  {phone?<MobileShell s={s} genres={genres}/>:<>
+  {phone?<MobileShell s={s}/>:<>
   <TopBar {...s}/>
   <main>
    <section className="hero"><p className="eyebrow">your own little corner of the internet</p><KineticText as="h1" text="good music. no hurry." stagger={.09}/></section>
    <section className="stage">
-    <MoodList {...s} genres={genres}/>
+    <MoodList {...s}/>
     <PlayerDevice {...s}/>
     <LyricWindow {...s}/>
    </section>

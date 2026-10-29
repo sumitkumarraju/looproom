@@ -410,3 +410,4 @@ html:has(.device-drag.is-dragging) .music-trail{opacity:0}
 /* Lyric lines keep their own spring transitions; the marker just appears under the hovered line. */
 .lyric-line{background-image:linear-gradient(100deg,color-mix(in srgb,color-mix(in srgb,var(--album-vivid) 62%,#fff) 60%,transparent),transparent);background-repeat:no-repeat;background-position:0 90%;background-size:0 30%}
 .lyric-line:hover{background-size:100% 30%}
+.show-more{display:flex;margin:28px auto 0}

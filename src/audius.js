@@ -20,4 +20,4 @@ export function mapTrack(t,mood){
 const playable=list=>list.filter(t=>t.is_streamable!==false&&t.duration>45);
 
 export async function trending(genre,mood,limit=20){return playable(await json(`/tracks/trending?${new URLSearchParams({time:'week',limit:String(limit),...(genre?{genre}:{})})}`)).map(t=>mapTrack(t,mood))}
-export async function search(query,mood){return playable(await json(`/tracks/search?${new URLSearchParams({query,limit:'20'})}`)).map(t=>mapTrack(t,mood))}
+export async function search(query,mood){return playable(await json(`/tracks/search?${new URLSearchParams({query,limit:'50'})}`)).map(t=>mapTrack(t,mood))}

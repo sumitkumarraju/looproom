@@ -29,7 +29,7 @@ const tabs=[['now','now playing',Disc],['library','library',SquaresFour],['moods
 // Phone layout: an app-style shell (like Apple Music) with a bottom tab bar and a mini player,
 // dressed as the same retro handheld. Now playing shows the player with live lyrics right under it;
 // every desktop feature is reachable from the three tabs.
-export default function MobileShell({s,genres}){
+export default function MobileShell({s}){
  const [tab,setTab]=useState('now');
  const {current,playing,connected,clientId,run,toggle,next,setModal,fullscreen,toggleFullscreen}=s;
  return <div className="m-shell">
@@ -45,7 +45,7 @@ export default function MobileShell({s,genres}){
     <LyricWindow {...s}/>
    </>}
    {tab==='library'&&<Collection {...s}/>}
-   {tab==='moods'&&<MoodList {...s} genres={genres}/>}
+   {tab==='moods'&&<MoodList {...s}/>}
   </main>
   {tab!=='now'&&<div className="m-mini">
    <button className="m-mini-track" onClick={()=>setTab('now')} aria-label={`Now playing: ${current.title}. Open player.`}><img src={current.cover||catalog[0].cover} alt=""/><span><strong>{current.title}</strong><small>{current.artist}</small></span></button>

@@ -14,6 +14,8 @@ export const mixes=[
  {id:'trending',name:'Trending Now',note:'top of the week',glyph:'flame',tint:'#e46a45',genres:[null],mood:'Energy'},
  {id:'archive',name:'Open Archive',note:'creative commons',glyph:'planet',tint:'#8d9a6c',archive:'dream pop',mood:'Daydream'},
 ];
+// Genres offered by the genre picker (Audius genre names); each loads that genre's trending tracks.
+export const genres=['Pop','Hip-Hop/Rap','R&B/Soul','Electronic','House','Deep House','Techno','Trap','Drum & Bass','Dubstep','Lo-Fi','Ambient','Downtempo','Alternative','Rock','Metal','Punk','Folk','Acoustic','Jazz','Funk','Classical','Latin','Reggae','Dancehall','World','Soundtrack'];
 export const moodMix={'Daydream':'chill','Focus':'focus','Golden hour':'pop','After hours':'night','Energy':'party'};
 
 // Daily Mix: three genres picked from today's date, so it changes daily but stays stable all day.
@@ -24,14 +26,18 @@ const shuffle=list=>list.map(t=>[Math.random(),t]).sort((a,b)=>a[0]-b[0]).map(([
 const unique=list=>[...new Map(list.map(t=>[t.id,t])).values()];
 
 export async function loadMix(id,mood){
+ if(id.startsWith('genre:')){
+  const found=await audius.trending(id.slice(6),mood,80).catch(()=>[]);
+  return found.length?shuffle(found):searchOpenMusic(id.slice(6),mood);
+ }
  const mix=mixes.find(m=>m.id===id)||mixes[0];
  const m=mix.mood||mood;
  if(mix.archive)return searchOpenMusic(mix.archive,m);
  const genres=mix.id==='daily'?dailyGenres():mix.genres;
- const lists=await Promise.allSettled(genres.map(g=>audius.trending(g,m,14)));
+ const lists=await Promise.allSettled(genres.map(g=>audius.trending(g,m,40)));
  const tracks=unique(lists.flatMap(r=>r.status==='fulfilled'?r.value:[]));
  // Audius unreachable: fall back to the archive so music still plays.
- return tracks.length?shuffle(tracks).slice(0,24):searchOpenMusic(mix.archive||'electronic',m);
+ return tracks.length?shuffle(tracks).slice(0,80):searchOpenMusic(mix.archive||'electronic',m);
 }
 
 export async function searchAll(query,mood){
