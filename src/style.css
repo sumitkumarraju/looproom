@@ -423,6 +423,7 @@ html:has(.device-drag.is-dragging) .music-trail{opacity:0}
 .yt-host,.yt-host iframe{display:block;width:100%;height:100%;border:0}
 
 .station-name{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);max-width:34vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:var(--pixel);font-size:12px;letter-spacing:.02em;padding:6px 12px;border-radius:999px;background:#ffffff1f}
-.m-top{position:relative}
-.m-top .station-name{max-width:38vw;font-size:10px}
+/* Phone header: brand | station | connect in one row below the safe area (notch / Dynamic Island). */
+.m-top{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:8px}
+.m-top .station-name{position:static;transform:none;justify-self:center;max-width:100%;font-size:10px}
 .is-fullscreen .station-name{display:none}
