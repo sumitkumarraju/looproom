@@ -31,8 +31,12 @@ export default function TypeStorm({lines,activeLine,time,duration,bpm,mood,playi
  const line=lines[activeLine]||lines[0];
  const end=lines[activeLine+1]?.time??Math.max(line.time+4,duration||0);
  const words=line.text.split(/\s+/).filter(Boolean);
- const span=Math.max(.6,(end-line.time)*.85);
- const shown=Math.min(words.length,Math.max(1,Math.floor((time-line.time)/span*words.length)+1));
+ // Same timing as the flow theme's SungLine: each word gets a share of the sung time in
+ // proportion to its length, and lands just before it is sung so the slam hits on the word.
+ const weights=words.map(w=>Math.max(2,w.replace(/[^\p{L}\p{N}]/gu,'').length));
+ const total=weights.reduce((x,y)=>x+y,0),span=Math.max(.8,Math.min(end-line.time,8)*.85);
+ let at=line.time,shown=1;
+ words.forEach((_,i)=>{if(i>0&&time>=at-.08)shown=i+1;at+=span*weights[i]/total});
  const seed=hash(line.text+activeLine);
  const symbol=symbolFor(line.text,lines,mood);
  return <button key={activeLine} className={'storm '+(playing?'':'is-paused')} style={{'--beat':`${60/(bpm||100)}s`}} onClick={()=>seek(line.time)} aria-label={`Lyric: ${line.text}. Replay this line.`}>
