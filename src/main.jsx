@@ -8,6 +8,11 @@ import {startPerformanceGuard} from './perf';
 startPerformanceGuard();
 createRoot(document.getElementById('root')).render(<App/>);
 
+// iOS ignores user-scalable=no: block pinch (gesture*) and double-tap zoom so the UI stays fixed to the screen.
+for(const e of ['gesturestart','gesturechange','gestureend'])document.addEventListener(e,ev=>ev.preventDefault());
+let lastTouch=0;
+document.addEventListener('touchend',ev=>{const n=Date.now();if(n-lastTouch<300)ev.preventDefault();lastTouch=n},{passive:false});
+
 // "Tap to enter" on the intro: start the music (the tap is the gesture browsers require for
 // sound), then zoom the icon and fade the splash away to reveal the app.
 const splash=document.getElementById('splash');

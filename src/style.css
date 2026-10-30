@@ -26,7 +26,7 @@ button:active{transform:scale(.96)}
 button:disabled{opacity:.5;cursor:not-allowed}
 button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid #fff;outline-offset:3px;border-radius:4px}
 input[type=range]{cursor:pointer}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;touch-action:pan-x pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}
 
 .site{position:relative;min-height:100dvh;isolation:isolate}
 .eyebrow{font-family:var(--pixel);font-size:11px;letter-spacing:.04em;text-transform:lowercase;opacity:.82}
@@ -97,7 +97,7 @@ html:has(dialog[open]) .music-cursor,html:has(dialog[open]) .cursor-dot,html:has
 .mood[aria-pressed=true]{opacity:1;transform:translateX(8px)}
 .mood-n{font-family:var(--pixel);font-size:10px;letter-spacing:0;opacity:.7}
 .genre{display:flex;flex-direction:column;gap:8px;margin-top:30px;max-width:220px}
-select{appearance:none;width:100%;background:#ffffff1c url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='white' fill='none' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 14px center;border:1px solid #ffffff60;color:#fff;border-radius:999px;padding:10px 34px 10px 16px;font-size:14px}
+select{appearance:none;width:100%;background:#ffffff1c url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='white' fill='none' stroke-width='1.5'/%3E%3C/svg%3E") no-repeat right 14px center;border:1px solid #ffffff60;color:#fff;border-radius:999px;padding:10px 34px 10px 16px;font-size:16px}
 select option{color:#111}
 
 /* ---------- Device ---------- */
@@ -175,7 +175,7 @@ select option{color:#111}
 .auto-label input:checked+.toggle-track::after{transform:translateX(14px);background:var(--accent)}
 .auto-label input:focus-visible+.toggle-track{outline:2px solid #fff;outline-offset:3px}
 .search-form{display:flex;gap:10px;margin-bottom:28px;max-width:560px}
-.search-form input{flex:1;min-width:0;border:1px solid #ffffff66;border-radius:999px;background:#ffffff1c;color:#fff;padding:10px 18px;font-size:15px}
+.search-form input{flex:1;min-width:0;border:1px solid #ffffff66;border-radius:999px;background:#ffffff1c;color:#fff;padding:10px 18px;font-size:16px}
 .search-form input::placeholder{color:#ffffffa8}
 .track-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:clamp(16px,2vw,28px)}
 .album-card{display:flex;flex-direction:column;gap:4px;text-align:left;animation:card-in .8s var(--spring) both;animation-delay:calc(var(--i) * 50ms)}
@@ -363,7 +363,7 @@ dialog::backdrop{background:#0007;backdrop-filter:blur(6px)}
 .m-install small{font-size:12px;line-height:1.35;opacity:.8}
 .m-install-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 12px;border-radius:999px;background:var(--lcd-ink);color:var(--lcd);font-family:var(--pixel);font-size:10px}
 /* Installed app: no browser chrome, so keep content clear of the status bar and home indicator. */
-@media (display-mode: standalone),(display-mode: fullscreen){body{overscroll-behavior:none}}
+@media (display-mode: standalone),(display-mode: fullscreen){html,body{overscroll-behavior:none}}
 .brand{display:inline-flex;align-items:center;gap:9px}
 .brand-mark{display:block;width:30px;height:30px;border-radius:8px;box-shadow:0 4px 12px #0003}
 .brand-mark svg{display:block;width:100%;height:100%}
