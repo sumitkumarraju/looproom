@@ -30,7 +30,7 @@ export default function App(){
  return <div id="top" className={'site '+(focus?'focus-mode ':'')+(s.fullscreen?'is-fullscreen':'')}>
   <RetroGradient enabled={backgroundMotion}/>
   <MusicCursor/>
-  <YouTubeStage host={s.ytHost} active={!!current.youtube}/>
+  <YouTubeStage host={s.ytHost} active={!!current.youtube} onHidden={s.pauseYouTube}/>
   {phone?<MobileShell s={s}/>:<>
   <TopBar {...s}/>
   <main>

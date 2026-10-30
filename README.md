@@ -56,7 +56,7 @@ React, Vite, Tailwind CSS, and Phosphor Icons use MIT licenses; installed depend
 
 ## YouTube (full mainstream catalogue)
 
-With a YouTube Data API key configured, search covers almost any song and a **Top Hits** mix appears. Songs play in YouTube's official embedded player, shown inside the handheld's screen (or as a floating mini player when the screen is out of view), as YouTube requires its player to stay visible. Videos whose owners block embedding are skipped.
+With a YouTube Data API key configured, search covers almost any song and a **Top Hits** mix appears. Songs play in YouTube's official embedded player, shown inside the handheld's screen. YouTube requires its player to stay visible while it plays, so a video pauses whenever its screen scrolls out of view (or another tab is open on phones) rather than playing hidden. Videos whose owners block embedding are skipped.
 
 Setup (once):
 1. In [Google Cloud Console](https://console.cloud.google.com/), create a project, enable **YouTube Data API v3**, and create an **API key** (restrict it to that API).
