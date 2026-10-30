@@ -49,8 +49,6 @@ export function useLooproom(){
  async function next(skipped=true){const s=live.current;if(skipped)preference(s.current.id,{skips:(s.prefs[s.current.id]?.skips||0)+1});if(s.mode==='spotify'){if(s.current.spotify&&!s.auto)await player.current.nextTrack();else if(s.queue.length)await select(s.queue[0]);else await startSpotify();return}let nextTrack=s.queue[0];if(!s.auto)nextTrack=tracks[(tracks.findIndex(t=>t.id===s.current.id)+1)%tracks.length];if(nextTrack)await select(nextTrack);else{audio.current.currentTime=0;await audio.current.play()}}
  // YouTube must stay visible while playing: when its screen leaves the view the video pauses.
  function pauseYouTube(){const p=yt.current;if(p?.getPlayerState?.()===1){p.pauseVideo();notify('Paused: YouTube videos only play while their screen is visible. Press play to continue.')}}
- // Minimising the app, locking the phone or switching tabs hides the video too, so it pauses then as well.
- useEffect(()=>{const hide=()=>{if(document.hidden&&live.current.mode==='youtube'){const p=yt.current;if(p?.getPlayerState?.()===1)p.pauseVideo()}};document.addEventListener('visibilitychange',hide);addEventListener('pagehide',hide);return()=>{document.removeEventListener('visibilitychange',hide);removeEventListener('pagehide',hide)}},[]);
  // The YouTube player is created once (as soon as YouTube is available) and reused for every video.
  // Its callbacks only use refs and stable functions, so they never go stale.
  function ensureYouTube(){
