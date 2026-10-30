@@ -23,9 +23,9 @@ export function useLooproom(){
  // YouTubeStage keeps it visible over the player's screen.
  const ytHost=useMemo(()=>{const host=document.createElement('div');host.className='yt-host';host.append(document.createElement('div'));return host},[]);
  // Streamed library tracks (Audius mixes, archive.org, YouTube) as opposed to the bundled demo and uploads.
- const remote=t=>t.audius||t.open||t.youtube;
+ const remote=t=>t.audius||t.open||t.youtube||t.spotify;
  // While a mix (or search result) is playing, "next" stays inside it rather than jumping to the demo tracks.
- const queue=useMemo(()=>{const pool=mode==='spotify'?spotifyTracks:remote(current)?tracks.filter(remote):tracks;return rankTracks(pool,current.id,mood,mode==='spotify'?'All genres':genre,prefs,recent)},[tracks,spotifyTracks,current,mood,genre,prefs,recent,mode]);
+ const queue=useMemo(()=>{const pool=mode==='spotify'&&mix!=='search'?spotifyTracks:remote(current)?tracks.filter(remote):tracks;return rankTracks(pool,current.id,mood,mode==='spotify'?'All genres':genre,prefs,recent)},[tracks,spotifyTracks,current,mood,genre,prefs,recent,mode,mix]);
  // Real songs (Spotify, open music, uploads) get synced lyrics looked up online; demo tracks keep their visual poem.
  const [found,setFound]=useState({});
  const lookupLyrics=!current.lyrics&&(current.spotify||current.open||current.audius||current.youtube||current.upload);
@@ -65,7 +65,7 @@ export function useLooproom(){
  async function previous(){if(current.spotify)return player.current.previousTrack();if(time>3){if(current.youtube)yt.current?.seekTo(0,true);else audio.current.currentTime=0;return}const id=recent.at(-1);await select(tracks.find(t=>t.id===id)||tracks[(tracks.findIndex(t=>t.id===current.id)-1+tracks.length)%tracks.length])}
  function seek(seconds){setTime(seconds);syncClock(seconds);run(async()=>{if(current.spotify)await player.current.seek(seconds*1000);else if(current.youtube)yt.current?.seekTo(seconds,true);else audio.current.currentTime=seconds})}
  async function changeVolume(v){setVolume(v);audio.current.volume=v;yt.current?.setVolume?.(Math.round(v*100));if(player.current)await player.current.setVolume(v)}
- async function searchSpotify(query,requestedMood=mood,playFirst=false){if(!query.trim())return;setBusy(true);try{const data=await spotify.api('/search?'+new URLSearchParams({q:query,type:'track',limit:'10'}));const found=(data.tracks?.items||[]).filter(Boolean).map(t=>spotify.mapTrack(t,requestedMood));setSpotifyTracks(found);if(!found.length)notify('No songs found. Try another artist or song.');if(playFirst&&found.length){await select(found[0]);}}finally{setBusy(false)}}
+ async function searchSpotify(query,requestedMood=mood,playFirst=false){if(!query.trim())return;setBusy(true);try{setMix('spotify');const data=await spotify.api('/search?'+new URLSearchParams({q:query,type:'track',limit:'10'}));const found=(data.tracks?.items||[]).filter(Boolean).map(t=>spotify.mapTrack(t,requestedMood));setSpotifyTracks(found);if(!found.length)notify('No songs found. Try another artist or song.');if(playFirst&&found.length){await select(found[0]);}}finally{setBusy(false)}}
  async function chooseMood(m){setMood(m);if(mode==='spotify'&&connected){await searchSpotify(moodTerms[m],m,false);notify('Fresh picks are ready. Choose a track to start your new mood.')}else{await loadMix(moodMix[m],m);notify(`${m}: ${mixes.find(x=>x.id===moodMix[m]).name} is in your room.`)}}
  // Loads a library mix (or search results) in place of the previous one; demo tracks and uploads stay.
  // Once the listener has entered, a fresh list starts playing if nothing streamed was playing yet.
@@ -76,7 +76,13 @@ export function useLooproom(){
  function chooseGenre(g){setGenre(g);if(g==='All genres')return;if(mode==='spotify')return searchSpotify(`genre:"${spotifyGenres[g]||g.toLowerCase()}"`,mood,true);return loadMix('genre:'+g,mood,true)}
   // Search: Spotify when signed in; otherwise YouTube (full mainstream catalogue) when the site has a
  // YouTube key, falling back to the free library.
- async function searchMusic(query){if(!query.trim())return;if(mode==='spotify')return searchSpotify(query);setMix('search');setBusy(true);try{let found=[];if(ytEnabled)found=await youtube.search(query,mood).catch(e=>{notify(e.message);return []});await applyResults(found.length?found:await searchAll(query,mood),true)}finally{setBusy(false)}}
+ async function searchMusic(query){if(!query.trim())return;setMix('search');setBusy(true);try{
+  // Signed in to Spotify: its results join YouTube / Audius / archive.org results in one list, interleaved.
+  const spot=live.current.mode==='spotify'||connected?spotify.api('/search?'+new URLSearchParams({q:query,type:'track',limit:'10'})).then(d=>(d.tracks?.items||[]).filter(Boolean).map(t=>spotify.mapTrack(t,mood))).catch(()=>[]):Promise.resolve([]);
+  const open=(async()=>{let f=[];if(ytEnabled)f=await youtube.search(query,mood).catch(e=>{notify(e.message);return []});return f.length?f:await searchAll(query,mood)})();
+  const [a,b]=await Promise.all([spot,open]);setSpotifyTracks(a);
+  const found=[];for(let i=0;i<Math.max(a.length,b.length);i++){if(a[i])found.push(a[i]);if(b[i])found.push(b[i])}
+  await applyResults(found,true)}finally{setBusy(false)}}
  // Called from the intro's "tap to enter" (a user gesture, so the browser allows sound).
  function enter(){live.current.entered=true;if(live.current.mode==='spotify')return run(toggle);const first=live.current.tracks.find(remote);run(()=>first?select(first):audio.current.play())}
  async function spotifyFallback(e){player.current?.disconnect();player.current=null;setConnected(false);setDevice('');setSpotifyTracks([]);setMode('demo');notify(`${e.message} Playing the free library instead.`);await run(()=>loadMix(moodMix[live.current.mood],live.current.mood,true))}
@@ -118,7 +124,7 @@ export function useLooproom(){
  async function importLyrics(f){if(!f)return;const lyrics=parseLrc(await f.text());if(!lyrics.length)throw Error('No timed lyrics found. Use an .lrc file with [00:12.50] timestamps.');const updated={...current,lyrics};setCurrent(updated);setTracks(ts=>ts.map(t=>t.id===current.id?updated:t));notify('Lyrics synced. Tap any line to jump to it.')}
  function importArt(f){if(!f)return;if(!f.type.startsWith('image/'))return notify('Choose an image file.');const cover=URL.createObjectURL(f);urls.current.push(cover);setCurrent(t=>({...t,cover}));setTracks(ts=>ts.map(t=>t.id===current.id?{...t,cover}:t))}
  async function disconnect(){player.current?.disconnect();player.current=null;spotify.disconnect();setConnected(false);setDevice('');setSpotifyTracks([]);setMode('demo');await select(catalog[0],false);notify('Spotify disconnected. Sign in again whenever you like.')}
- const visibleTracks=useMemo(()=>{const list=mode==='spotify'?spotifyTracks:tracks;return activeTab==='Favorites'?list.filter(t=>prefs[t.id]?.liked):list},[activeTab,mode,spotifyTracks,tracks,prefs]);
+ const visibleTracks=useMemo(()=>{const list=mode==='spotify'&&mix!=='search'?spotifyTracks:tracks;return activeTab==='Favorites'?list.filter(t=>prefs[t.id]?.liked):list},[activeTab,mode,spotifyTracks,tracks,prefs,mix]);
  const audioEvents=useMemo(()=>({onPlay:()=>setPlaying(true),onPause:()=>{if(live.current.mode==='demo')setPlaying(false)},onTimeUpdate:()=>{if(live.current.mode==='demo')setTime(audio.current.currentTime)},onLoadedMetadata:()=>{if(live.current.mode==='demo')setDuration(audio.current.duration)},onEnded:()=>latest.current.run(async()=>{const s=live.current;latest.current.preference(s.current.id,{completed:(s.prefs[s.current.id]?.completed||0)+1});if(s.repeat){audio.current.currentTime=0;await audio.current.play()}else await latest.current.next(false)}),onError:()=>{if(live.current.mode==='demo')latest.current.notify('This audio could not be played. Try another track or a supported audio file.')}}),[]);
  const api={backgroundMotion,setBackgroundMotion,tracks,current,playing,time,duration,volume,mood,genre,setGenre,prefs,setPrefs,repeat,setRepeat,auto,setAuto,focus,setFocus,activeTab,setActiveTab,message,setMessage,busy,connected,search,setSearch,modal,setModal,clientId,setClientId,mode,audio,dialog,fileInput,lyricInput,artInput,queue,lines,activeLine,notify,run,preference,like,select,next,toggle,previous,seek,changeVolume,searchSpotify,chooseMood,importAudio,importLyrics,importArt,disconnect,visibleTracks,searchMusic,mix,loadMix,ytEnabled,ytHost,pauseYouTube,chooseGenre,genres,lyricsStatus,fullscreen,toggleFullscreen,audioEvents};
  for(const [k,v] of Object.entries(api))if(typeof v==='function'){latest.current[k]=v;stable.current[k]??=(...args)=>latest.current[k](...args);api[k]=stable.current[k]}
